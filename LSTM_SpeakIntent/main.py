@@ -18,9 +18,9 @@ x_train, x_test, y_train, y_test = data.load_data()
 
 # 通过GetLoader将数据进行加载，返回Dataset对象，包含data和labels
 torch_data = data.GetLoader(x_train, y_train)
-train_data = DataLoader(torch_data, batch_size=1500, shuffle=True, drop_last=False)
+train_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
 torch_data = data.GetLoader(x_test, y_test)
-test_data = DataLoader(torch_data, batch_size=1500, shuffle=True, drop_last=False)
+test_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
 
 # Input Data
 training_data_count = len(x_train)  # 7352 training series (with 50% overlap between each serie)
@@ -29,7 +29,7 @@ num_steps = len(x_train[0])  # 128 timesteps per series
 num_input = len(x_train[0][0])  # 9 input parameters per timestep
 
 # Hyper Parameters
-epochs = 10           # 训练整批数据多少次
+epochs = 50           # 训练整批数据多少次
 hidden_size = 64
 num_layers = 1
 num_classes = 6
