@@ -1,3 +1,8 @@
+# Reference code link:
+# https://github.com/guillaume-chevalier/LSTM-Human-Activity-Recognition
+# https://youngforever.tech/posts/2020-03-07-lstm%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF/
+# https://blog.csdn.net/l8947943/article/details/103733473
+
 import numpy as np
 import matplotlib
 import matplotlib as plt
