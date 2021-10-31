@@ -94,15 +94,15 @@ def load_data():
     return x_train, x_test, y_train, y_test
 
 class GetLoader(torch.utils.data.Dataset):
-    # 初始化函数，得到数据
+    # initial function, get the data and label
     def __init__(self, data_root, data_label):
         self.data = data_root
         self.label = data_label
-    # index是根据batchsize划分数据后得到的索引，最后将data和对应的labels进行一起返回
+    # index is divided based on the batchsize, finally return the data and corresponding labels
     def __getitem__(self, index):
         data = self.data[index]
         labels = self.label[index]
         return data, labels
-    # 该函数返回数据大小长度，目的是DataLoader方便划分，如果不知道大小，DataLoader会一脸懵逼
+    # for DataLoader better dividing the data, we use this function to return the length of the data
     def __len__(self):
         return len(self.data)

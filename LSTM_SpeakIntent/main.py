@@ -19,22 +19,33 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 #download and load data
 data.download_data()
-x_train, x_test, y_train, y_test = data.load_data()
+train_data, test_data, y_train, y_test = data.load_data()
 
-# 通过GetLoader将数据进行加载，返回Dataset对象，包含data和labels
+# Input Data
+training_data_count = len(train_data)  # 7352 training series (with 50% overlap between each serie)
+testing_data_count = len(test_data)
+num_steps = len(train_data[0])  # 128 timesteps per series
+num_input = len(train_data[0][0])  # 9 input parameters per timestep
+
+# x_train = train_data
+# x_test = test_data
+x_train = []
+x_test = []
+for i in range(num_input):
+    x_train.append(train_data)
+    x_test.append(test_data)
+x_train = np.transpose(x_train, (1, 2, 3, 0))
+x_test = np.transpose(x_test, (1, 2, 3, 0))
+
+# use GetLoader to load the data and return Dataset object, which contains data and labels
 torch_data = data.GetLoader(x_train, y_train)
 train_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
 torch_data = data.GetLoader(x_test, y_test)
 test_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
 
-# Input Data
-training_data_count = len(x_train)  # 7352 training series (with 50% overlap between each serie)
-testing_data_count = len(x_test)
-num_steps = len(x_train[0])  # 128 timesteps per series
-num_input = len(x_train[0][0])  # 9 input parameters per timestep
 
 # Hyper Parameters
-epochs = 50           # 训练整批数据多少次
+epochs = 50
 hidden_size = 64
 num_layers = 1
 num_classes = 6
@@ -47,7 +58,9 @@ optimizer = torch.optim.Adam(model.parameters(), lr)
 
 for epoch in range(epochs):
     for i, (data, labels) in enumerate(train_data):
-        data = data.reshape(-1, num_steps, num_input).to(device)
+        print(data.size())
+        data = data.reshape(-1, num_steps, num_input, num_input).to(device)
+        print(data.size())
         labels = labels.to(device)
         label = []
         if labels[0].size() != num_classes:
@@ -60,6 +73,7 @@ for epoch in range(epochs):
 
         # forward pass
         outputs = model(data)
+        print(outputs.size())
         loss = criterion(outputs, label)
 
         # backward and optimize

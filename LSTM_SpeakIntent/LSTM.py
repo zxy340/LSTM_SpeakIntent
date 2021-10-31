@@ -18,13 +18,13 @@ class simpleLSTM(nn.Module):
         # out shape (batch, time_step, output_size)
         # h_n shape (n_layers, batch, hidden_size)
         # h_c shape (n_layers, batch, hidden_size)
-        # 初始化hidden和memory cell参数
+        # initial hidden and memory cell parameters
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
 
         # forward propagate lstm
         out, (h_n, h_c) = self.lstm(x, (h0, c0))
 
-        # 选取最后一个时刻的输出
+        # select the output of the last moment.
         out = self.fc(out[:, -1, :])
         return out

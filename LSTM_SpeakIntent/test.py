@@ -2,6 +2,10 @@ import numpy as np
 import torch.nn as nn
 import torch
 
-a = np.arange(10, dtype=np.int32)
-b = np.eye(6, dtype=np.int32)[a[1]]
-print(b)
+a = [[1, 2], [3, 4], [5, 6], [7, 8]]
+print(np.shape(a))
+b = []
+for i in range(10):
+    b.append(a)
+b = np.transpose(b, (2, 1, 0))
+print(np.shape(b))
