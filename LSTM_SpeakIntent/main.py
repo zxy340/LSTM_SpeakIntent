@@ -19,23 +19,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 #download and load data
 data.download_data()
-train_data, test_data, y_train, y_test = data.load_data()
+x_train, x_test, y_train, y_test = data.load_data()
 
 # Input Data
-training_data_count = len(train_data)  # 7352 training series (with 50% overlap between each serie)
-testing_data_count = len(test_data)
-num_steps = len(train_data[0])  # 128 timesteps per series
-num_input = len(train_data[0][0])  # 9 input parameters per timestep
-
-# x_train = train_data
-# x_test = test_data
-x_train = []
-x_test = []
-for i in range(num_input):
-    x_train.append(train_data)
-    x_test.append(test_data)
-x_train = np.transpose(x_train, (1, 2, 3, 0))
-x_test = np.transpose(x_test, (1, 2, 3, 0))
+training_data_count = len(x_train)  # 7352 training series (with 50% overlap between each serie)
+testing_data_count = len(x_test)
+num_steps = len(x_train[0])  # 128 timesteps per series
+num_input = len(x_train[0][0])  # 9 input parameters per timestep
 
 # use GetLoader to load the data and return Dataset object, which contains data and labels
 torch_data = data.GetLoader(x_train, y_train)
@@ -58,9 +48,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr)
 
 for epoch in range(epochs):
     for i, (data, labels) in enumerate(train_data):
-        print(data.size())
-        data = data.reshape(-1, num_steps, num_input, num_input).to(device)
-        print(data.size())
+        data = data.reshape(-1, num_steps, num_input).to(device)
         labels = labels.to(device)
         label = []
         if labels[0].size() != num_classes:
@@ -73,7 +61,6 @@ for epoch in range(epochs):
 
         # forward pass
         outputs = model(data)
-        print(outputs.size())
         loss = criterion(outputs, label)
 
         # backward and optimize
