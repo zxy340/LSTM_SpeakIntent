@@ -138,14 +138,15 @@ def process_ex(signal):
     return np.concatenate((f0[:, np.newaxis, :64], f1[:, np.newaxis, :64], f2[:, np.newaxis, :64]), axis=1)
 
 
-def load_data():
+def load_data(concept):
     n_channle = 4
     n_adc = 256
     n_chirp = 128
-    n_frame = int(getsize("/home/xiaoyu/blink_mmwave/mmwave.bin") / 2 / n_chirp / n_adc / n_channle / 2)
-    data = awr1642_lazy("/home/xiaoyu/blink_mmwave/mmwave.bin", n_frame, 128, n_channle, n_adc)
-    label = np.load("/home/xiaoyu/blink_mmwave/blink.npz")['label'][:, :128]
-    mask = np.load("/home/xiaoyu/blink_mmwave/blink.npz")['mask'][:, :128]
+    Path = '/home/xiaoyu/blink_mmwave/'
+    n_frame = int(getsize(Path + 'mmwave.bin') / 2 / n_chirp / n_adc / n_channle / 2)
+    data = awr1642_lazy(Path + 'mmwave.bin', n_frame, 128, n_channle, n_adc)
+    label = np.load(Path + concept + '.npz')['label'][:, :128]
+    mask = np.load(Path + concept + '.npz')['mask'][:, :128]
     delete = []
     for i in range(len(data)):
         for j in range(128):
@@ -160,7 +161,8 @@ def load_data():
     # frames that all its chirps are non-blink
     noblink = np.argwhere(((label == 0).sum(axis=1)) == 128)
     print(np.shape(blink))
-    n_sample = 8790
+    print(np.shape(noblink))
+    n_sample = np.shape(blink)[0]
     seq = np.concatenate([blink[:n_sample], noblink[:n_sample]], axis=0)
     print(np.shape(seq))
     np.random.shuffle(seq)

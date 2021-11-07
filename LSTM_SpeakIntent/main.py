@@ -18,15 +18,41 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+Concepts = [
+    'blink',
+    'brow_lowerer',
+    'cheek_raiser',
+    'inner_bowl_raiser',
+    'jaw',
+    'lid_tightener',
+    'lip_corner_depressor',
+    'lip_corner_puller',
+    'lip_stretcher',
+    'lip_suck',
+    'lip_tightener',
+    'nose_wrinkler',
+    'outer_bowl_raiser',
+    'upper_lid_raiser',
+    'upper_lip_raiser'
+]
+
+label_index = 5  # indicate which concept to train the model
+os.chdir('data/' + Concepts[label_index] + '/')
 #download and load data
 if not os.path.exists('x_data.npy'):
-    x_data, y_data = data.load_data()
+    os.chdir('..')
+    os.chdir('..')
+    x_data, y_data = data.load_data(Concepts[label_index])
+    os.chdir('data/' + Concepts[label_index] + '/')
     np.save('x_data', x_data)
     np.save('y_data', y_data)
+    print('Dataset is now located at: ' + 'data/' + Concepts[label_index] + '/')
 x_data = np.load('x_data.npy')
 y_data = np.load('y_data.npy')
 print(np.shape(x_data))
 print(np.shape(y_data))
+os.chdir('..')
+os.chdir('..')
 x_train = x_data[:int(len(x_data)/4*3)]
 y_train = y_data[:int(len(y_data)/4*3)]
 x_test = x_data[(int(len(x_data)/4*3)+1):]
