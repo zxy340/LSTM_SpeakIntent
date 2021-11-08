@@ -19,34 +19,69 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 Concepts = [
-    'blink',
-    'brow_lowerer',
-    'cheek_raiser',
-    'inner_bowl_raiser',
-    'jaw',
-    'lid_tightener',
-    'lip_corner_depressor',
-    'lip_corner_puller',
-    'lip_stretcher',
-    'lip_suck',
-    'lip_tightener',
-    'nose_wrinkler',
-    'outer_bowl_raiser',
-    'upper_lid_raiser',
-    'upper_lip_raiser'
+    'Blink',  # AU45
+    'Brow_Lowerer',  # AU4
+    'Cheek_Raiser',  # AU6
+    'Inner_Brow_Raiser',  # AU1
+    'Jaw_Drop',  # AU26
+    'Lid_Tightener',  # AU7
+    'Lip_Corner_Depressor',  # AU15
+    'Lip_Corner_Puller',  # AU 12
+    'Lip_stretcher',  # AU20
+    'Lip_Suck',  # AU28
+    'Lip_Tightener',  # AU23
+    'Nose_Wrinkler',  # AU9
+    'Outer_Brow_Raiser',  # AU2
+    'Upper_Lid_Raiser',  # AU5
+    'Upper_Lip_Raiser',  # AU10
+    'Chin_Raiser',  # AU17
+    'Dimpler',  # AU14
+    'Lips_part'  # AU25
 ]
-
+# Concepts = [
+#     'Inner_Brow_Raiser',     # AU01
+#     'Outer_Brow_Raiser',     # AU02
+#     'Brow_Lowerer',          # AU04
+#     'Upper_Lid_Raiser',      # AU05
+#     'Cheek_Raiser',          # AU06
+#     'Lid_Tightener',         # AU07
+#     'Nose_Wrinkler',         # AU09
+#     'Upper_Lip_Raiser',      # AU10
+#     'Lip_Corner_Puller',     # AU12
+#     'Dimpler',               # AU14
+#     'Lip_Corner_Depressor',  # AU15
+#     'Chin_Raiser',           # AU17
+#     'Lip_stretcher',         # AU20
+#     'Lip_Tightener',         # AU23
+#     'Lips_part'              # AU25
+#     'Jaw_Drop',              # AU26
+#     'Lip_Suck',              # AU28
+#     'Blink',                 # AU45
+# ]
+PATH = "LSTM_model"  # the stored model parameter
+path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
 label_index = 5  # indicate which concept to train the model
+
+# ........................read and process data...............................
+# find if data has been processed and saved in local
+# if not, read data from local files and process the data
+# after processing, save the data in local
 os.chdir('data/' + Concepts[label_index] + '/')
-#download and load data
 if not os.path.exists('x_data.npy'):
     os.chdir('..')
     os.chdir('..')
-    x_data, y_data = data.load_data(Concepts[label_index])
+    x_data, y_data = data.load_data(Concepts[label_index], path)
     os.chdir('data/' + Concepts[label_index] + '/')
     np.save('x_data', x_data)
     np.save('y_data', y_data)
     print('Dataset is now located at: ' + 'data/' + Concepts[label_index] + '/')
+# ...............................................................................
+
+# ...........................load data...........................................
+# load data from saved files, the variable "x_data" stores mmWave data, the variable "y_data" stores labels
+# we split 3/4 data as training data, and 1/4 data as testing data
+# the variable "x_train" stores mmWave data for training set, the variable "y_train" stores labels for training set
+# the variable "x_test" stores mmWave data for testing set, the variable "y_test" stores labels for testing set
 x_data = np.load('x_data.npy')
 y_data = np.load('y_data.npy')
 print(np.shape(x_data))
@@ -59,31 +94,38 @@ x_test = x_data[(int(len(x_data)/4*3)+1):]
 y_test = y_data[(int(len(y_data)/4*3)+1):]
 print(np.shape(x_train))
 print(np.shape(y_train))
-# Input Data
+# .................................................................................
+
+# .............basic information of training and testing set.......................
 training_data_count = len(x_train)  # number of training series
 testing_data_count = len(x_test)
 num_steps = len(x_train[0])  # timesteps per series
-num_input = 3 * 64  # input parameters per timestep
+num_input = len(x_train[0][0])  # input parameters per timestep
+# ..................................................................................
 
+# ..................................................................................
 # use GetLoader to load the data and return Dataset object, which contains data and labels
 torch_data = data.GetLoader(x_train, y_train)
 train_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
 torch_data = data.GetLoader(x_test, y_test)
 test_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
+# ....................................................................................
 
-
-# Hyper Parameters
+# .............Hyper Parameters and initial model parameters..........................
 epochs = 20
 hidden_size = 64
 num_layers = 5
 num_classes = 2
 lr = 0.01           # learning rate
-
+# initial model
 model = simpleLSTM(num_input, hidden_size, num_layers, num_classes).to(device)
 # loss and optimizer
 criterion = nn.CrossEntropyLoss().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr)
+# .....................................................................................
 
+# ...........................train and store the model.................................
+# train the model
 for epoch in range(epochs):
     C = np.zeros(2)
     if epoch % 5 == 0:
@@ -118,7 +160,16 @@ for epoch in range(epochs):
             print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
                    .format(epoch+1, epochs, i+1, training_data_count / 128, loss.item()))
     print(C)
+# store the model
+torch.save(model.state_dict(), PATH)
+# ........................................................................................
 
+# ............................load and test the trained model.............................
+# load the model
+if os.path.exists("LSTM_model"):
+    model = torch.load(PATH)
+else:
+    print("the local doesn't store the model for testing, please train the model!")
 # Test the model
 model.eval()
 with torch.no_grad():
@@ -162,3 +213,4 @@ with torch.no_grad():
     print('Test F1 score of the model on the {} test mmWave data: {}'.format(testing_data_count, F1))
     print('Test C of the model on the {} test mmWave data: {}'.format(testing_data_count, C))
     print('Test Accuracy of the model on the {} test mmWave data: {} %'.format(testing_data_count, 100 * correct / total))
+# ..................................................................................................

@@ -138,15 +138,16 @@ def process_ex(signal):
     return np.concatenate((f0[:, np.newaxis, :64], f1[:, np.newaxis, :64], f2[:, np.newaxis, :64]), axis=1)
 
 
-def load_data(concept):
+def load_data(concept, Path):
     n_channle = 4
     n_adc = 256
     n_chirp = 128
-    Path = '/home/xiaoyu/blink_mmwave/'
-    n_frame = int(getsize(Path + 'mmwave.bin') / 2 / n_chirp / n_adc / n_channle / 2)
-    data = awr1642_lazy(Path + 'mmwave.bin', n_frame, 128, n_channle, n_adc)
-    label = np.load(Path + concept + '.npz')['label'][:, :128]
-    mask = np.load(Path + concept + '.npz')['mask'][:, :128]
+    n_frame = int(getsize(Path + 'mmwave.bin') / 2 / n_chirp / n_adc / n_channle / 2)  # get the number of frames of all the mmWave data
+    data = awr1642_lazy(Path + 'mmwave.bin', n_frame, 128, n_channle, n_adc)  # get all the mmWave data
+    label = np.load(Path + concept + '.npz')['label'][:, :128]  # get all the labels
+    mask = np.load(Path + concept + '.npz')['mask'][:, :128]  # get all the masks, if mask is "False", this mmWave data is not available
+
+    # delete mmWave data which is all 0
     delete = []
     for i in range(len(data)):
         for j in range(128):
@@ -156,17 +157,20 @@ def load_data(concept):
     label = np.delete(label, delete, axis=0)
     mask = np.delete(mask, delete, axis=0)
 
-    # frames that all its chirps are blink
-    blink = np.argwhere(((label == 1).sum(axis=1)) == 128)
-    # frames that all its chirps are non-blink
-    noblink = np.argwhere(((label == 0).sum(axis=1)) == 128)
-    print(np.shape(blink))
-    print(np.shape(noblink))
-    n_sample = np.shape(blink)[0]
-    seq = np.concatenate([blink[:n_sample], noblink[:n_sample]], axis=0)
+    # get data with effective labels
+    yes_concept = np.argwhere(((label == 1).sum(axis=1)) == 128)  # frames that all its chirps are this concept
+    no_concept = np.argwhere(((label == 0).sum(axis=1)) == 128)  # frames that all its chirps are not this concept
+    print(np.shape(yes_concept))
+    print(np.shape(no_concept))
+
+    # get the frame number of yes_concept and choose the same number of no_concept
+    n_sample = np.shape(yes_concept)[0]
+    seq = np.concatenate([yes_concept[:n_sample], no_concept[:n_sample]], axis=0)  # concatenate yes_concept and no_concept sequences
     print(np.shape(seq))
-    np.random.shuffle(seq)
+    np.random.shuffle(seq)  # randomly shuffle the sequences
     print(np.shape(seq))
+
+    # process mmWave data: reorder_IQ->process_ex, and then concatenate them together
     samples = reorder_IQ(data[seq[:]].squeeze())
     print(np.shape(samples))
     X = process_ex(samples[0].reshape(-1, 4, 256)).reshape(1, 128, -1)
@@ -174,7 +178,7 @@ def load_data(concept):
         print(np.shape(X))
         X = np.concatenate([X, process_ex(samples[i].reshape(-1, 4, 256)).reshape(1, 128, -1)], axis=0)
     print(X.shape)
-
+    # get the corresponding labels of mmWave data
     Y = label[seq[:]][:, 0, 0]
     print(Y.shape)
 
