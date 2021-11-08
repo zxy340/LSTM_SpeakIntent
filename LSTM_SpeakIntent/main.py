@@ -19,62 +19,46 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 Concepts = [
-    'Blink',  # AU45
-    'Brow_Lowerer',  # AU4
-    'Cheek_Raiser',  # AU6
-    'Inner_Brow_Raiser',  # AU1
-    'Jaw_Drop',  # AU26
-    'Lid_Tightener',  # AU7
+    'Inner_Brow_Raiser',     # AU01
+    'Outer_Brow_Raiser',     # AU02
+    'Brow_Lowerer',          # AU04
+    'Upper_Lid_Raiser',      # AU05
+    'Cheek_Raiser',          # AU06
+    'Lid_Tightener',         # AU07
+    'Nose_Wrinkler',         # AU09
+    'Upper_Lip_Raiser',      # AU10
+    'Lip_Corner_Puller',     # AU12
+    'Dimpler',               # AU14
     'Lip_Corner_Depressor',  # AU15
-    'Lip_Corner_Puller',  # AU 12
-    'Lip_stretcher',  # AU20
-    'Lip_Suck',  # AU28
-    'Lip_Tightener',  # AU23
-    'Nose_Wrinkler',  # AU9
-    'Outer_Brow_Raiser',  # AU2
-    'Upper_Lid_Raiser',  # AU5
-    'Upper_Lip_Raiser',  # AU10
-    'Chin_Raiser',  # AU17
-    'Dimpler',  # AU14
-    'Lips_part'  # AU25
+    'Chin_Raiser',           # AU17
+    'Lip_stretcher',         # AU20
+    'Lip_Tightener',         # AU23
+    'Lips_part',             # AU25
+    'Jaw_Drop',              # AU26
+    'Lip_Suck',              # AU28
+    'Blink'                  # AU45
 ]
-# Concepts = [
-#     'Inner_Brow_Raiser',     # AU01
-#     'Outer_Brow_Raiser',     # AU02
-#     'Brow_Lowerer',          # AU04
-#     'Upper_Lid_Raiser',      # AU05
-#     'Cheek_Raiser',          # AU06
-#     'Lid_Tightener',         # AU07
-#     'Nose_Wrinkler',         # AU09
-#     'Upper_Lip_Raiser',      # AU10
-#     'Lip_Corner_Puller',     # AU12
-#     'Dimpler',               # AU14
-#     'Lip_Corner_Depressor',  # AU15
-#     'Chin_Raiser',           # AU17
-#     'Lip_stretcher',         # AU20
-#     'Lip_Tightener',         # AU23
-#     'Lips_part'              # AU25
-#     'Jaw_Drop',              # AU26
-#     'Lip_Suck',              # AU28
-#     'Blink',                 # AU45
-# ]
-PATH = "LSTM_model"  # the stored model parameter
-path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
-label_index = 12  # indicate which concept to train the model
+current_user_data = 'Eric/'  # the folder "data" has several users
+current_user_model = 'Eric/'  # the folder "model" has several users
+# path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
+path = '/home/xiaoyu/Eric/'  # for test only
+label_index = 17  # indicate which concept to train the model
+PATH = 'model/'  # the stored model parameter
 
 # ........................read and process data...............................
 # find if data has been processed and saved in local
 # if not, read data from local files and process the data
 # after processing, save the data in local
-os.chdir('data/' + Concepts[label_index] + '/')
-if not os.path.exists('x_data.npy'):
+os.chdir('data/' + current_user_data)
+if not os.path.exists(Concepts[label_index]):
+    os.makedirs(Concepts[label_index])
     os.chdir('..')
     os.chdir('..')
     x_data, y_data = data.load_data(Concepts[label_index], path)
-    os.chdir('data/' + Concepts[label_index] + '/')
+    os.chdir('data/' + current_user_data + Concepts[label_index] + '/')
     np.save('x_data', x_data)
     np.save('y_data', y_data)
-    print('Dataset is now located at: ' + 'data/' + Concepts[label_index] + '/')
+    print('Dataset is now located at: ' + 'data/' + current_user_data + Concepts[label_index] + '/')
 # ...............................................................................
 
 # ...........................load data...........................................
@@ -82,10 +66,14 @@ if not os.path.exists('x_data.npy'):
 # we split 3/4 data as training data, and 1/4 data as testing data
 # the variable "x_train" stores mmWave data for training set, the variable "y_train" stores labels for training set
 # the variable "x_test" stores mmWave data for testing set, the variable "y_test" stores labels for testing set
+os.chdir(Concepts[label_index] + '/')
 x_data = np.load('x_data.npy')
 y_data = np.load('y_data.npy')
+# x_test = np.load('x_data.npy')  # for test only
+# y_test = np.load('y_data.npy')  # for test only
 print(np.shape(x_data))
 print(np.shape(y_data))
+os.chdir('..')
 os.chdir('..')
 os.chdir('..')
 x_train = x_data[:int(len(x_data)/4*3)]
@@ -94,13 +82,15 @@ x_test = x_data[(int(len(x_data)/4*3)+1):]
 y_test = y_data[(int(len(y_data)/4*3)+1):]
 print(np.shape(x_train))
 print(np.shape(y_train))
+print(np.shape(x_test))
+print(np.shape(y_test))
 # .................................................................................
 
 # .............basic information of training and testing set.......................
 training_data_count = len(x_train)  # number of training series
 testing_data_count = len(x_test)
-num_steps = len(x_train[0])  # timesteps per series
-num_input = len(x_train[0][0])  # input parameters per timestep
+num_steps = len(x_test[0])  # timesteps per series
+num_input = len(x_test[0][0])  # input parameters per timestep
 # ..................................................................................
 
 # ..................................................................................
@@ -133,7 +123,6 @@ for epoch in range(epochs):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
     for i, (data, labels) in enumerate(train_data):
-        # data = data.reshape(-1, num_steps, num_input).to(device)
         data = data.to(device)
         label = []
         if labels[0].size() != num_classes:
@@ -161,16 +150,21 @@ for epoch in range(epochs):
                    .format(epoch+1, epochs, i+1, training_data_count / 128, loss.item()))
     print(C)
 # store the model
-torch.save(model.state_dict(), PATH)
+os.chdir(PATH + current_user_data)
+if not os.path.exists(Concepts[label_index]):
+    os.mkdir(Concepts[label_index])
+os.chdir(Concepts[label_index])
+torch.save(model.state_dict(), 'LSTM_model')
+os.chdir('..')
+os.chdir('..')
+os.chdir('..')
 # ........................................................................................
 
 # ............................load and test the trained model.............................
 # load the model
-if os.path.exists("LSTM_model"):
-    model.load_state_dict(torch.load(PATH))
-    print("the model has been successfully loaded!")
-else:
-    print("the local doesn't store the model for testing, please train the model!")
+os.chdir(PATH + current_user_model + Concepts[label_index])
+model.load_state_dict(torch.load('LSTM_model'))
+print("the model has been successfully loaded!")
 # Test the model
 model.eval()
 with torch.no_grad():
@@ -182,7 +176,7 @@ with torch.no_grad():
     FN = 0
     FP = 0
     for data, label in test_data:
-        data = data.reshape(-1, num_steps, num_input).to(device)
+        data = data.to(device)
         label = label.to(device)
         label = label.squeeze()
         outputs = model(data.float())
@@ -208,6 +202,7 @@ with torch.no_grad():
         # FP    predict 1 label 0
         FP += ((predicted == 1) & (label == 0)).cpu().sum()
 
+    print('TP = {}, TN = {}, FN = {}, FP = {}'.format(TP, TN, FN, FP))
     p = TP / (TP + FP)
     r = TP / (TP + FN)
     F1 = 2 * r * p / (r + p)

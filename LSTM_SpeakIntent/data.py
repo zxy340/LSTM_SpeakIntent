@@ -181,8 +181,8 @@ def load_data(concept, Path):
     print(np.shape(yes_concept))
     print(np.shape(no_concept))
 
-    # get the frame number of yes_concept and choose the same number of no_concept
-    n_sample = np.shape(yes_concept)[0]
+    # get the min frame number of yes_concept and no_concept and choose the same number of the other
+    n_sample = min(np.shape(yes_concept)[0], np.shape(no_concept)[0])
     seq = np.concatenate([yes_concept[:n_sample], no_concept[:n_sample]], axis=0)  # concatenate yes_concept and no_concept sequences
     print(np.shape(seq))
     np.random.shuffle(seq)  # randomly shuffle the sequences
