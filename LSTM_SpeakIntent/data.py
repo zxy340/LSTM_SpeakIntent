@@ -139,6 +139,24 @@ def process_ex(signal):
 
 
 def load_data(concept, Path):
+    """
+    load mmWave data from the path
+
+    Parameters
+    ----------
+    concept : string
+        the name of the label to be classified
+    Path : string
+        the path of mmWave data and concept label
+    Returns
+    -------
+    X : (n_sample * 2, 128, 3 * 64)
+        array of the mmWave data, n_sample is the frame number of label 1, which indicates the data has the concept action,
+        n_sample * 2 is because we control the label 0 and label 1 has the same number for training and testing,
+        128 is the number of chirps of one frame, 3 * 64 is the data size of one chirp.
+    Y : (n_sample * 2, )
+        array of the labels
+    """
     n_channle = 4
     n_adc = 256
     n_chirp = 128

@@ -60,7 +60,7 @@ Concepts = [
 # ]
 PATH = "LSTM_model"  # the stored model parameter
 path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
-label_index = 8  # indicate which concept to train the model
+label_index = 12  # indicate which concept to train the model
 
 # ........................read and process data...............................
 # find if data has been processed and saved in local
