@@ -60,7 +60,7 @@ Concepts = [
 # ]
 PATH = "LSTM_model"  # the stored model parameter
 path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
-label_index = 5  # indicate which concept to train the model
+label_index = 8  # indicate which concept to train the model
 
 # ........................read and process data...............................
 # find if data has been processed and saved in local
@@ -167,7 +167,8 @@ torch.save(model.state_dict(), PATH)
 # ............................load and test the trained model.............................
 # load the model
 if os.path.exists("LSTM_model"):
-    model = torch.load(PATH)
+    model.load_state_dict(torch.load(PATH))
+    print("the model has been successfully loaded!")
 else:
     print("the local doesn't store the model for testing, please train the model!")
 # Test the model
