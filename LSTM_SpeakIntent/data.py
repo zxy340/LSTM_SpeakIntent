@@ -191,10 +191,13 @@ def load_data(concept, Path):
     # process mmWave data: reorder_IQ->process_ex, and then concatenate them together
     samples = reorder_IQ(data[seq[:]].squeeze())
     print(np.shape(samples))
-    X = process_ex(samples[0].reshape(-1, 4, 256)).reshape(1, 128, -1)
-    for i in range(1, len(samples)):
-        print(np.shape(X))
-        X = np.concatenate([X, process_ex(samples[i].reshape(-1, 4, 256)).reshape(1, 128, -1)], axis=0)
+    temp = process_ex(samples[0].reshape(-1, 4, 256)).reshape(1, 128, -1)
+    X = np.zeros((np.shape(samples)[0], np.shape(samples)[1], np.shape(temp)[2]), dtype=np.float)
+    for i in range(len(samples)):
+        X[i] = process_ex(samples[i].reshape(-1, 4, 256)).reshape(1, 128, -1)
+        if i % 100 == 0:
+            print(i)
+            print(X[i])
     print(X.shape)
     # get the corresponding labels of mmWave data
     Y = label[seq[:]][:, 0, 0]
