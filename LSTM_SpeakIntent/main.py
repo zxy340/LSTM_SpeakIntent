@@ -42,7 +42,7 @@ current_user_data = 'Eric/'  # the folder "data" has several users
 current_user_model = 'Eric/'  # the folder "model" has several users
 # path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
 path = '/home/xiaoyu/Eric/'  # for test only
-label_index = 0  # indicate which concept to train the model
+label_index = 4  # indicate which concept to train the model
 PATH = 'model/'  # the stored model parameter
 
 # ........................read and process data...............................
@@ -64,8 +64,8 @@ if not os.path.exists('data/' + current_user_data + Concepts[label_index] + '/x_
 # the variable "x_test" stores mmWave data for testing set, the variable "y_test" stores labels for testing set
 x_data = np.load('data/' + current_user_data + Concepts[label_index] + '/x_data.npy')
 y_data = np.load('data/' + current_user_data + Concepts[label_index] + '/y_data.npy')
-# x_test = np.load('x_data.npy')  # for test only
-# y_test = np.load('y_data.npy')  # for test only
+# x_test = np.load('data/' + current_user_data + Concepts[label_index] + '/x_data.npy')  # for test only
+# y_test = np.load('data/' + current_user_data + Concepts[label_index] + '/y_data.npy')  # for test only
 print(np.shape(x_data))
 print(np.shape(y_data))
 x_train = x_data[:int(len(x_data)/4*3)]
@@ -140,22 +140,16 @@ for epoch in range(epochs):
         if i % 10 == 0:
             print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
                    .format(epoch+1, epochs, i+1, training_data_count / 128, loss.item()))
-    print(C)
+    print('Train C of the model on the {} train mmWave data: {}'.format(training_data_count, C))
 # store the model
-os.chdir(PATH + current_user_data)
-if not os.path.exists(Concepts[label_index]):
-    os.mkdir(Concepts[label_index])
-os.chdir(Concepts[label_index])
-torch.save(model.state_dict(), 'LSTM_model')
-os.chdir('..')
-os.chdir('..')
-os.chdir('..')
+if not os.path.exists(PATH + current_user_data + Concepts[label_index] + '/LSTM_model'):
+    os.mkdir(PATH + current_user_data + Concepts[label_index])
+torch.save(model.state_dict(), PATH + current_user_data + Concepts[label_index] + '/LSTM_model')
 # ........................................................................................
 
 # ............................load and test the trained model.............................
 # load the model
-os.chdir(PATH + current_user_model + Concepts[label_index])
-model.load_state_dict(torch.load('LSTM_model'))
+model.load_state_dict(torch.load(PATH + current_user_model + Concepts[label_index] + '/LSTM_model'))
 print("the model has been successfully loaded!")
 # Test the model
 model.eval()
