@@ -42,22 +42,18 @@ current_user_data = 'Eric/'  # the folder "data" has several users
 current_user_model = 'Eric/'  # the folder "model" has several users
 # path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
 path = '/home/xiaoyu/Eric/'  # for test only
-label_index = 17  # indicate which concept to train the model
+label_index = 0  # indicate which concept to train the model
 PATH = 'model/'  # the stored model parameter
 
 # ........................read and process data...............................
 # find if data has been processed and saved in local
 # if not, read data from local files and process the data
 # after processing, save the data in local
-os.chdir('data/' + current_user_data)
-if not os.path.exists(Concepts[label_index]):
-    os.makedirs(Concepts[label_index])
-    os.chdir('..')
-    os.chdir('..')
+if not os.path.exists('data/' + current_user_data + Concepts[label_index] + '/x_data.npy'):
+    os.makedirs('data/' + current_user_data + Concepts[label_index])
     x_data, y_data = data.load_data(Concepts[label_index], path)
-    os.chdir('data/' + current_user_data + Concepts[label_index] + '/')
-    np.save('x_data', x_data)
-    np.save('y_data', y_data)
+    np.save('data/' + current_user_data + Concepts[label_index] + '/x_data', x_data)
+    np.save('data/' + current_user_data + Concepts[label_index] + '/y_data', y_data)
     print('Dataset is now located at: ' + 'data/' + current_user_data + Concepts[label_index] + '/')
 # ...............................................................................
 
@@ -66,16 +62,12 @@ if not os.path.exists(Concepts[label_index]):
 # we split 3/4 data as training data, and 1/4 data as testing data
 # the variable "x_train" stores mmWave data for training set, the variable "y_train" stores labels for training set
 # the variable "x_test" stores mmWave data for testing set, the variable "y_test" stores labels for testing set
-os.chdir(Concepts[label_index] + '/')
-x_data = np.load('x_data.npy')
-y_data = np.load('y_data.npy')
+x_data = np.load('data/' + current_user_data + Concepts[label_index] + '/x_data.npy')
+y_data = np.load('data/' + current_user_data + Concepts[label_index] + '/y_data.npy')
 # x_test = np.load('x_data.npy')  # for test only
 # y_test = np.load('y_data.npy')  # for test only
 print(np.shape(x_data))
 print(np.shape(y_data))
-os.chdir('..')
-os.chdir('..')
-os.chdir('..')
 x_train = x_data[:int(len(x_data)/4*3)]
 y_train = y_data[:int(len(y_data)/4*3)]
 x_test = x_data[(int(len(x_data)/4*3)+1):]
