@@ -42,7 +42,7 @@ current_user_data = 'Eric/'  # the folder "data" has several users
 current_user_model = 'Eric/'  # the folder "model" has several users
 # path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
 path = '/home/xiaoyu/Eric/'  # for test only
-label_index = 4  # indicate which concept to train the model
+label_index = 5  # indicate which concept to train the model
 PATH = 'model/'  # the stored model parameter
 
 # ........................read and process data...............................

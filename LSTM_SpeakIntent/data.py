@@ -197,7 +197,6 @@ def load_data(concept, Path):
         X[i] = process_ex(samples[i].reshape(-1, 4, 256)).reshape(1, 128, -1)
         if i % 100 == 0:
             print(i)
-            print(X[i])
     print(X.shape)
     # get the corresponding labels of mmWave data
     Y = label[seq[:]][:, 0, 0]
