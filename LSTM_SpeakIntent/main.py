@@ -38,11 +38,11 @@ Concepts = [
     'Lip_Suck',              # AU28
     'Blink'                  # AU45
 ]
-current_user_data = 'Eric/'  # the folder "data" has several users
-current_user_model = 'Eric/'  # the folder "model" has several users
-# path = '/home/xiaoyu/blink_mmwave/'  # the stored mmWave data and labels
-path = '/home/xiaoyu/Eric/'  # for test only
-label_index = 5  # indicate which concept to train the model
+current_user_data = 'Alex/'  # the folder "data" has several users
+current_user_model = 'Alex/'  # the folder "model" has several users
+path = '/home/xiaoyu/blink_mmwave/'  # the stored Alex mmWave data and labels
+# path = '/home/xiaoyu/Eric/'  # the stored Eric mmWave data and labels
+label_index = 0  # indicate which concept to train the model
 PATH = 'model/'  # the stored model parameter
 
 # ........................read and process data...............................
