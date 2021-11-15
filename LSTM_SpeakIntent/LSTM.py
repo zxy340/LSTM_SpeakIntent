@@ -17,11 +17,12 @@ class simpleLSTM(nn.Module):
         # x shape (batch, time_step, input_size)
         # out shape (batch, time_step, output_size)
         # h_n shape (n_layers, batch, hidden_size)
-        # h_c shape (n_layers, batch, hidden_size)
+        # c_n shape (n_layers, batch, hidden_size)
 
         # forward propagate lstm
         out, (h_n, c_n) = self.lstm(x)
 
         # select the output of the last moment.
         out = self.fc(out[:, -1, :])
-        return out
+        # return out
+        return out, h_n, c_n

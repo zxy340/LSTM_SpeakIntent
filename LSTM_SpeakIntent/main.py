@@ -166,7 +166,7 @@ with torch.no_grad():
         label = label.to(device)
         label = label.squeeze()
         outputs = model(data.float())
-        _, predicted = torch.max(outputs.data, 1)
+        _, predicted = torch.max(outputs, 1)
         total += label.size(0)
         correct += (predicted == label).sum().item()
         for i in range(len(predicted)):
