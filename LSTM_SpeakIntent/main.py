@@ -4,14 +4,12 @@
 # https://blog.csdn.net/l8947943/article/details/103733473
 
 import numpy as np
-import matplotlib
-import matplotlib as plt
 import torch.nn as nn
 import torch
-from sklearn import metrics
 from torch.utils.data import DataLoader
 from LSTM import simpleLSTM
 import data
+from pathlib import Path
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -38,10 +36,11 @@ Concepts = [
     'Lip_Suck',              # AU28
     'Blink'                  # AU45
 ]
-current_user_data = 'Alex/'  # the folder "data" has several users
-current_user_model = 'Alex/'  # the folder "model" has several users
-path = '/home/xiaoyu/blink_mmwave/'  # the stored Alex mmWave data and labels
+current_user_data = 'dunjiong_lin/'  # the folder "data" has several users
+current_user_model = 'dunjiong_lin/'  # the folder "model" has several users
+# path = '/home/xiaoyu/blink_mmwave/'  # the stored Alex mmWave data and labels
 # path = '/home/xiaoyu/Eric/'  # the stored Eric mmWave data and labels
+path = '/mnt/stuff/data/dunjiong_lin/output/'
 label_index = 0  # indicate which concept to train the model
 PATH = 'model/'  # the stored model parameter
 
@@ -143,6 +142,8 @@ for epoch in range(epochs):
     print('Train C of the model on the {} train mmWave data: {}'.format(training_data_count, C))
 # store the model
 if not os.path.exists(PATH + current_user_data + Concepts[label_index] + '/LSTM_model'):
+    # path = Path.cwd() / (PATH + current_user_data + Concepts[label_index])
+    # path.mkdir()
     os.mkdir(PATH + current_user_data + Concepts[label_index])
 torch.save(model.state_dict(), PATH + current_user_data + Concepts[label_index] + '/LSTM_model')
 # ........................................................................................
@@ -166,7 +167,7 @@ with torch.no_grad():
         label = label.to(device)
         label = label.squeeze()
         outputs = model(data.float())
-        _, predicted = torch.max(outputs.data, 1)
+        _, predicted = torch.max(outputs, 1)
         total += label.size(0)
         correct += (predicted == label).sum().item()
         for i in range(len(predicted)):
