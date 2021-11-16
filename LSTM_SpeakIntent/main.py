@@ -139,9 +139,7 @@ for epoch in range(epochs):
     print('Train C of the model on the {} train mmWave data: {}'.format(training_data_count, C))
 # store the model
 if not os.path.exists(PATH + current_user_data + Concepts[label_index] + '/LSTM_model'):
-    # path = Path.cwd() / (PATH + current_user_data + Concepts[label_index])
-    # path.mkdir()
-    os.makedirs(PATH + current_user_data + Concepts[label_index])
+    os.mkdir(PATH + current_user_data + Concepts[label_index])
 torch.save(model.state_dict(), PATH + current_user_data + Concepts[label_index] + '/LSTM_model')
 # ........................................................................................
 
