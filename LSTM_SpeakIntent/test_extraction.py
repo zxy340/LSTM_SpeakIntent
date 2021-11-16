@@ -30,31 +30,60 @@ Concepts = [
     'Lip_Suck',              # AU28
     'Blink'                  # AU45
 ]
-current_user_data = 'adityarathore/'  # the folder "data" has several users
-current_user_model = 'adityarathore/'  # the folder "model" has several users
-# path = '/home/xiaoyu/blink_mmwave/'  # the stored Alex mmWave data and labels
-# path = '/home/xiaoyu/Eric/'  # the stored Eric mmWave data and labels
-path = '/mnt/stuff/data/adityarathore/output/'
+users = [
+    'adityarathore',
+    'Alex',
+    'Amy_Zhang',
+    'Anarghya',
+    'aniruddh',
+    'anthony',
+    'baron_huang',
+    'bhuiyan',
+    'Eric',
+    'chandler',
+    'chenyi_zou',
+    'deepak_joseph',
+    'dunjiong_lin',
+    'Eric_Kim',
+    'FrankYang',
+    'giorgi_datashvili',
+    'Huining_Li',
+    'jonathan',
+    'Kunjie_Lin',
+    'lauren',
+    'moohliton',
+    'phoung',
+    'Tracy_chen'
+]
 label_index = 0  # indicate which concept to train the model
-PATH = 'model/'  # the stored model parameter
 
 # ...........................load data...........................................
 # load data from saved files, the variable "x_data" stores mmWave data, the variable "y_data" stores labels
 # we split 3/4 data as training data, and 1/4 data as testing data
 # the variable "x_train" stores mmWave data for training set, the variable "y_train" stores labels for training set
 # the variable "x_test" stores mmWave data for testing set, the variable "y_test" stores labels for testing set
-x_data = np.load('data/' + current_user_data + Concepts[label_index] + '/x_data.npy')
-y_data = np.load('data/' + current_user_data + Concepts[label_index] + '/y_data.npy')
-print(np.shape(x_data))
-print(np.shape(y_data))
+x_data = np.zeros((1, 128, 192))
+y_data = np.zeros((1,))
+for i in range(int(len(users)/4*3), len(users)):
+    user = users[i]
+    x_data = np.concatenate((x_data, np.load('data/' + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
+    y_data = np.concatenate((y_data, np.load('data/' + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
+x_data = x_data[1:]
+y_data = y_data[1:]
+print("the length of x_data is {}".format(np.shape(x_data)))
+print("the length of y_data is {}".format(np.shape(y_data)))
+seq = np.arange(0, len(x_data), 1)
+np.random.shuffle(seq)
+x_data = x_data[seq[:]]
+y_data = y_data[seq[:]]
 x_train = x_data[:int(len(x_data)/4*3)]
 y_train = y_data[:int(len(y_data)/4*3)]
 x_test = x_data[(int(len(x_data)/4*3)+1):]
 y_test = y_data[(int(len(y_data)/4*3)+1):]
-print(np.shape(x_train))
-print(np.shape(y_train))
-print(np.shape(x_test))
-print(np.shape(y_test))
+print("the length of x_train is {}".format(np.shape(x_train)))
+print("the length of y_train is {}".format(np.shape(y_train)))
+print("the length of x_test is {}".format(np.shape(x_test)))
+print("the length of y_test is {}".format(np.shape(y_test)))
 # .................................................................................
 
 # .............basic information of training and testing set.......................
@@ -81,7 +110,7 @@ lr = 0.01           # learning rate
 model = simpleLSTM(num_input, hidden_size, num_layers, num_classes).to(device)
 
 # load the model
-model.load_state_dict(torch.load(PATH + current_user_model + Concepts[label_index] + '/LSTM_model'))
+model.load_state_dict(torch.load('LSTM_model'))
 print("the model has been successfully loaded!")
 
 fc_dic = {}
@@ -121,8 +150,8 @@ for layer in range(num_layers):
 for layer in range(num_layers):
     name = "fc" + str(layer)
     fc = fc_dic[name]
-    # for parameters in fc.parameters():
-    #     print("parameters of the {} layer is {}".format(layer, parameters))
+    for parameters in fc.parameters():
+        print("parameters of the {} layer is {}".format(layer, parameters))
     # Test the model
     fc.eval()
     with torch.no_grad():
