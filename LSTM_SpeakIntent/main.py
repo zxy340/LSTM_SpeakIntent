@@ -9,7 +9,6 @@ import torch
 from torch.utils.data import DataLoader
 from LSTM import simpleLSTM
 import data
-from pathlib import Path
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -36,45 +35,72 @@ Concepts = [
     'Lip_Suck',              # AU28
     'Blink'                  # AU45
 ]
-current_user_data = 'dunjiong_lin/'  # the folder "data" has several users
-current_user_model = 'dunjiong_lin/'  # the folder "model" has several users
-# path = '/home/xiaoyu/blink_mmwave/'  # the stored Alex mmWave data and labels
-# path = '/home/xiaoyu/Eric/'  # the stored Eric mmWave data and labels
-path = '/mnt/stuff/data/dunjiong_lin/output/'
+users = [
+    'adityarathore',
+    'Caitlin_Chan',
+    'Amy_Zhang',
+    'Anarghya',
+    'aniruddh',
+    'anthony',
+    'baron_huang',
+    'bhuiyan',
+    'Eric',
+    'chandler',
+    'chenyi_zou',
+    'deepak_joseph',
+    'dunjiong_lin',
+    'Eric_Kim',
+    'FrankYang',
+    'giorgi_datashvili',
+    'Huining_Li',
+    'jonathan',
+    'Kunjie_Lin',
+    'lauren',
+    'moohliton',
+    'phoung',
+    'Tracy_chen'
+]
 label_index = 0  # indicate which concept to train the model
-PATH = 'model/'  # the stored model parameter
-
-# ........................read and process data...............................
-# find if data has been processed and saved in local
-# if not, read data from local files and process the data
-# after processing, save the data in local
-if not os.path.exists('data/' + current_user_data + Concepts[label_index] + '/x_data.npy'):
-    os.makedirs('data/' + current_user_data + Concepts[label_index])
-    x_data, y_data = data.load_data(Concepts[label_index], path)
-    np.save('data/' + current_user_data + Concepts[label_index] + '/x_data', x_data)
-    np.save('data/' + current_user_data + Concepts[label_index] + '/y_data', y_data)
-    print('Dataset is now located at: ' + 'data/' + current_user_data + Concepts[label_index] + '/')
-# ...............................................................................
+data_path = '/mnt/stuff/xiaoyu/data/'  # the path where 'x_data.npy' and 'y_data.npy' are located
+model_type = 'LSTM/'
 
 # ...........................load data...........................................
 # load data from saved files, the variable "x_data" stores mmWave data, the variable "y_data" stores labels
 # we split 3/4 data as training data, and 1/4 data as testing data
 # the variable "x_train" stores mmWave data for training set, the variable "y_train" stores labels for training set
 # the variable "x_test" stores mmWave data for testing set, the variable "y_test" stores labels for testing set
-x_data = np.load('data/' + current_user_data + Concepts[label_index] + '/x_data.npy')
-y_data = np.load('data/' + current_user_data + Concepts[label_index] + '/y_data.npy')
-# x_test = np.load('data/' + current_user_data + Concepts[label_index] + '/x_data.npy')  # for test only
-# y_test = np.load('data/' + current_user_data + Concepts[label_index] + '/y_data.npy')  # for test only
-print(np.shape(x_data))
-print(np.shape(y_data))
-x_train = x_data[:int(len(x_data)/4*3)]
-y_train = y_data[:int(len(y_data)/4*3)]
-x_test = x_data[(int(len(x_data)/4*3)+1):]
-y_test = y_data[(int(len(y_data)/4*3)+1):]
-print(np.shape(x_train))
-print(np.shape(y_train))
-print(np.shape(x_test))
-print(np.shape(y_test))
+x_train = np.zeros((1, 128, 192))
+y_train = np.zeros((1,))
+x_test = np.zeros((1, 128, 192))
+y_test = np.zeros((1,))
+for i in range(int(len(users)/16*9)):
+    user = users[i]
+    x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
+    y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
+for i in range(int(len(users)/16*9), int(len(users)/4*3)):
+    user = users[i]
+    x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
+    y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
+x_train = x_train[1:]
+y_train = y_train[1:]
+x_test = x_test[1:]
+y_test = y_test[1:]
+print("the length of x_train is {}".format(np.shape(x_train)))
+print("the length of y_train is {}".format(np.shape(y_train)))
+print("the length of x_test is {}".format(np.shape(x_test)))
+print("the length of y_test is {}".format(np.shape(y_test)))
+seq = np.arange(0, len(x_train), 1)
+np.random.shuffle(seq)
+x_train = x_train[seq[:]]
+y_train = y_train[seq[:]]
+seq = np.arange(0, len(x_test), 1)
+np.random.shuffle(seq)
+x_test = x_test[seq[:]]
+y_test = y_test[seq[:]]
+print("the length of x_train is {}".format(np.shape(x_train)))
+print("the length of y_train is {}".format(np.shape(y_train)))
+print("the length of x_test is {}".format(np.shape(x_test)))
+print("the length of y_test is {}".format(np.shape(y_test)))
 # .................................................................................
 
 # .............basic information of training and testing set.......................
@@ -141,16 +167,14 @@ for epoch in range(epochs):
                    .format(epoch+1, epochs, i+1, training_data_count / 128, loss.item()))
     print('Train C of the model on the {} train mmWave data: {}'.format(training_data_count, C))
 # store the model
-if not os.path.exists(PATH + current_user_data + Concepts[label_index] + '/LSTM_model'):
-    # path = Path.cwd() / (PATH + current_user_data + Concepts[label_index])
-    # path.mkdir()
-    os.mkdir(PATH + current_user_data + Concepts[label_index])
-torch.save(model.state_dict(), PATH + current_user_data + Concepts[label_index] + '/LSTM_model')
+if not os.path.exists('model/' + model_type + Concepts[label_index]):
+    os.makedirs('model/' + model_type + Concepts[label_index])
+torch.save(model.state_dict(), 'model/' + model_type + Concepts[label_index] + '/' + 'LSTM_model')
 # ........................................................................................
 
 # ............................load and test the trained model.............................
 # load the model
-model.load_state_dict(torch.load(PATH + current_user_model + Concepts[label_index] + '/LSTM_model'))
+model.load_state_dict(torch.load('model/' + model_type + Concepts[label_index] + '/' + 'LSTM_model'))
 print("the model has been successfully loaded!")
 # Test the model
 model.eval()

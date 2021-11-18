@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from os.path import getsize
-
+import os
 
 def awr1642_lazy(dfile, num_frame, num_chirp, num_channel=4, num_sample=256):
     """ Lazy load adc data
@@ -162,6 +162,8 @@ def load_data(concept, Path):
     n_chirp = 128
     n_frame = int(getsize(Path + 'mmwave.bin') / 2 / n_chirp / n_adc / n_channle / 2)  # get the number of frames of all the mmWave data
     data = awr1642_lazy(Path + 'mmwave.bin', n_frame, 128, n_channle, n_adc)  # get all the mmWave data
+    if not os.path.exists(Path + concept + '.npz'):  # if the concept of the user is not existed, return 0 to indicate no data
+        return 0, 0
     label = np.load(Path + concept + '.npz')['label'][:, :128]  # get all the labels
     mask = np.load(Path + concept + '.npz')['mask'][:, :128]  # get all the masks, if mask is "False", this mmWave data is not available
 
@@ -183,6 +185,8 @@ def load_data(concept, Path):
 
     # get the min frame number of yes_concept and no_concept and choose the same number of the other
     n_sample = min(np.shape(yes_concept)[0], np.shape(no_concept)[0])
+    if n_sample == 0:  # if the availabel data is 0, then return 0 to indicate no data
+        return 0, 0
     seq = np.concatenate([yes_concept[:n_sample], no_concept[:n_sample]], axis=0)  # concatenate yes_concept and no_concept sequences
     print(np.shape(seq))
     np.random.shuffle(seq)  # randomly shuffle the sequences
@@ -195,7 +199,7 @@ def load_data(concept, Path):
     X = np.zeros((np.shape(samples)[0], np.shape(samples)[1], np.shape(temp)[2]), dtype=np.float)
     for i in range(len(samples)):
         X[i] = process_ex(samples[i].reshape(-1, 4, 256)).reshape(1, 128, -1)
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print(i)
     print(X.shape)
     # get the corresponding labels of mmWave data
