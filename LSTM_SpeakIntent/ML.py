@@ -87,8 +87,8 @@ print("the length of x_test is {}".format(np.shape(x_test)))
 print("the length of y_test is {}".format(np.shape(y_test)))
 seq = np.arange(0, len(x_train), 1)
 np.random.shuffle(seq)
-x_train = x_train[seq[:50000]]
-y_train = y_train[seq[:50000]]
+x_train = x_train[seq[:30000]]
+y_train = y_train[seq[:30000]]
 seq = np.arange(0, len(x_test), 1)
 np.random.shuffle(seq)
 x_test = x_test[seq[:10000]]
@@ -111,8 +111,9 @@ print("the length of y_test is {}".format(np.shape(y_test)))
 forest = RandomForestClassifier()
 forest.fit(x_train, y_train.ravel())
 y_pred = forest.predict(x_test)
-print('the final confusion_matrix outcome of RandomForest model is {}'.format(confusion_matrix(y_test.ravel(), y_pred)))
-print('the classification report of the concept {} is {}'.format(Concepts[label_index], classification_report(y_test.ravel(), y_pred)))
+print('the final result of RandomForest model for concept {} is:'.format(Concepts[label_index]))
+print(confusion_matrix(y_test.ravel(), y_pred))
+print(classification_report(y_test.ravel(), y_pred))
 print('the accuracy of the concept {} is {}'.format(Concepts[label_index], accuracy_score(y_test.ravel(), y_pred)))
 # .................................................................................
 
@@ -120,8 +121,9 @@ print('the accuracy of the concept {} is {}'.format(Concepts[label_index], accur
 svclassifier = SVC(kernel='linear')
 svclassifier.fit(x_train, y_train.ravel())
 y_pred = svclassifier.predict(x_test)
-print('the final confusion_matrix outcome of SVM model is {}'.format(confusion_matrix(y_test.ravel(), y_pred)))
-print('the classification report of the concept {} is {}'.format(Concepts[label_index], classification_report(y_test.ravel(), y_pred)))
+print('the final result of SVM model for concept {} is:'.format(Concepts[label_index]))
+print(confusion_matrix(y_test.ravel(), y_pred))
+print(classification_report(y_test.ravel(), y_pred))
 print('the accuracy of the concept {} is {}'.format(Concepts[label_index], accuracy_score(y_test.ravel(), y_pred)))
 # .................................................................................
 
@@ -129,7 +131,8 @@ print('the accuracy of the concept {} is {}'.format(Concepts[label_index], accur
 Bayes = GaussianNB()
 Bayes.fit(x_train, y_train.ravel())
 y_pred = Bayes.predict(x_test)
-print('the final confusion_matrix outcome of NaiveBayes model is {}'.format(confusion_matrix(y_test.ravel(), y_pred)))
-print('the classification report of the concept {} is {}'.format(Concepts[label_index], classification_report(y_test.ravel(), y_pred)))
+print('the final result of NaiveBayes model for concept {} is:'.format(Concepts[label_index]))
+print(confusion_matrix(y_test.ravel(), y_pred))
+print(classification_report(y_test.ravel(), y_pred))
 print('the accuracy of the concept {} is {}'.format(Concepts[label_index], accuracy_score(y_test.ravel(), y_pred)))
 # .................................................................................
