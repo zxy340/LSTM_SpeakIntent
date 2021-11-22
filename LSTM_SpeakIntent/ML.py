@@ -1,30 +1,30 @@
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn import svm
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import cross_val_score, KFold, cross_val_predict
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import os
 
 Concepts = [
-    'Inner_Brow_Raiser',     # AU01
-    'Outer_Brow_Raiser',     # AU02
-    'Brow_Lowerer',          # AU04
-    'Upper_Lid_Raiser',      # AU05
-    'Cheek_Raiser',          # AU06
-    'Lid_Tightener',         # AU07
-    'Nose_Wrinkler',         # AU09
-    'Upper_Lip_Raiser',      # AU10
-    'Lip_Corner_Puller',     # AU12
-    'Dimpler',               # AU14
-    'Lip_Corner_Depressor',  # AU15
-    'Chin_Raiser',           # AU17
-    'Lip_stretcher',         # AU20
-    'Lip_Tightener',         # AU23
-    'Lips_part',             # AU25
-    'Jaw_Drop',              # AU26
-    'Lip_Suck',              # AU28
-    'Blink'                  # AU45
+    'Inner_Brow_Raiser',     # AU01   # 01
+    'Outer_Brow_Raiser',     # AU02   # 02
+    'Brow_Lowerer',          # AU04   # 03
+    'Upper_Lid_Raiser',      # AU05   # 04
+    'Cheek_Raiser',          # AU06   # 05
+    'Lid_Tightener',         # AU07   # 06
+    'Nose_Wrinkler',         # AU09   # 07
+    'Upper_Lip_Raiser',      # AU10   # 08
+    'Lip_Corner_Puller',     # AU12   # 09
+    'Dimpler',               # AU14   # 10
+    'Lip_Corner_Depressor',  # AU15   # 11
+    'Chin_Raiser',           # AU17   # 12
+    'Lip_stretcher',         # AU20   # 13
+    'Lip_Tightener',         # AU23   # 14
+    'Lips_part',             # AU25   # 15
+    'Jaw_Drop',              # AU26   # 16
+    'Lip_Suck',              # AU28   # 17
+    'Blink'                  # AU45   # 18
 ]
 users = [
     'adityarathore',      # 00
@@ -118,13 +118,14 @@ print('the accuracy of the concept {} is {}'.format(Concepts[label_index], accur
 # .................................................................................
 
 # ......................train and test SVM model...................................
-svclassifier = SVC(kernel='linear')
-svclassifier.fit(x_train, y_train.ravel())
-y_pred = svclassifier.predict(x_test)
-print('the final result of SVM model for concept {} is:'.format(Concepts[label_index]))
-print(confusion_matrix(y_test.ravel(), y_pred))
-print(classification_report(y_test.ravel(), y_pred))
-print('the accuracy of the concept {} is {}'.format(Concepts[label_index], accuracy_score(y_test.ravel(), y_pred)))
+# todo: this code has some problems, I can't train out SVM model
+# svclassifier = svm.SVC(kernel='linear', c=1, gamma=1)
+# svclassifier.fit(x_train, y_train.ravel())
+# y_pred = svclassifier.predict(x_test)
+# print('the final result of SVM model for concept {} is:'.format(Concepts[label_index]))
+# print(confusion_matrix(y_test.ravel(), y_pred))
+# print(classification_report(y_test.ravel(), y_pred))
+# print('the accuracy of the concept {} is {}'.format(Concepts[label_index], accuracy_score(y_test.ravel(), y_pred)))
 # .................................................................................
 
 # ......................train and test Naive Bayes model...........................

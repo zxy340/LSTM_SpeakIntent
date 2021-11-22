@@ -2,7 +2,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 from torch.utils.data import DataLoader
-from LSTM import simpleLSTM
+from CNN import CNN
 import data
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -54,7 +54,7 @@ users = [
     'phoung',             # 20
     'Tracy_chen'          # 21
 ]
-label_index = 0  # indicate which concept to train the model
+label_index = 7  # indicate which concept to train the model
 data_path = '/mnt/stuff/xiaoyu/data/'  # the path where 'x_data.npy' and 'y_data.npy' are located
 model_type = 'LSTM/'
 
@@ -98,6 +98,16 @@ seq = np.arange(0, len(x_test), 1)
 np.random.shuffle(seq)
 x_test = x_test[seq[:]]
 y_test = y_test[seq[:]]
+x_train = np.reshape(x_train, (len(x_train), len(x_train[0]), 3, -1))
+x_test = np.reshape(x_test, (len(x_test), len(x_test[0]), 3, -1))
+x_train = x_train.swapaxes(1, 2)
+x_test = x_test.swapaxes(1, 2)
+print("the length of x_train is {}".format(np.shape(x_train)))
+print("the length of y_train is {}".format(np.shape(y_train)))
+print("the length of x_test is {}".format(np.shape(x_test)))
+print("the length of y_test is {}".format(np.shape(y_test)))
+x_train = x_train[:, :, :64, :]
+x_test = x_test[:, :, :64, :]
 print("the length of x_train is {}".format(np.shape(x_train)))
 print("the length of y_train is {}".format(np.shape(y_train)))
 print("the length of x_test is {}".format(np.shape(x_test)))
@@ -120,12 +130,18 @@ test_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False
 # ....................................................................................
 
 # .............Hyper Parameters and initial model parameters..........................
-hidden_size = 64
+hidden_size = [
+    32*32*16,
+    16*16*32,
+    8*8*64,
+    4*4*64,
+    2*2*64
+]
 num_layers = 5
 num_classes = 2
 lr = 0.01           # learning rate
 # initial model
-model = simpleLSTM(num_input, hidden_size, num_layers, num_classes).to(device)
+model = CNN(num_classes).to(device)
 # .....................................................................................
 
 # ............................load the trained model...................................
@@ -142,17 +158,25 @@ print("the model has been successfully loaded!")
 # layer2: array(64*2)
 # where 64 is the number of hidden parameters in each LSTM layer, 2 is the number of classes of labels
 fc_dic = {}  # record the parameters of each layer fc
+out = [
+    'out1',
+    'out2',
+    'out3',
+    'out4',
+    'out5'
+]
 for layer in range(num_layers):
     name = "fc" + str(layer)
     # create each fc
-    fc = nn.Linear(hidden_size, num_classes).to(device)
+    fc = nn.Linear(hidden_size[layer], num_classes).to(device)
     # loss and optimizer
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.Adam(fc.parameters(), lr)
     for i, (data, labels) in enumerate(train_data):
         data = data.to(device)
-        output_unused, h_n, c_n = model(data.float())
-
+        output_unused, out1, out2, out3, out4, out5 = model(data.float())
+        h_n = locals()[out[layer]]
+        h_n = h_n.reshape(h_n.size(0), -1)
         label = []
         if labels[0].size() != num_classes:
             for j in range(len(labels)):
@@ -162,7 +186,7 @@ for layer in range(num_layers):
         label = torch.tensor(np.array(label)).to(device)
 
         optimizer.zero_grad()
-        outputs = fc(h_n[layer].float())
+        outputs = fc(h_n.float())
         loss = criterion(outputs, label)
 
         # backward and optimize
@@ -181,8 +205,8 @@ for layer in range(num_layers):
 for layer in range(num_layers):
     name = "fc" + str(layer)
     fc = fc_dic[name]
-    for parameters in fc.parameters():
-        print("parameters of the {} layer is {}".format(layer, parameters))
+    # for parameters in fc.parameters():
+    #     print("parameters of the {} layer is {}".format(layer, parameters))
     # Test the model
     fc.eval()
     with torch.no_grad():
@@ -190,10 +214,12 @@ for layer in range(num_layers):
         total = 0
         for data, label in test_data:
             data = data.to(device)
-            output_unused, h_n, c_n = model(data.float())
+            output_unused, out1, out2, out3, out4, out5 = model(data.float())
+            h_n = locals()[out[layer]]
+            h_n = h_n.reshape(h_n.size(0), -1)
             label = label.to(device)
             label = label.squeeze()
-            outputs = fc(h_n[layer].float())
+            outputs = fc(h_n.float())
             _, predicted = torch.max(outputs, 1)
             total += label.size(0)
             correct += (predicted == label).sum().item()

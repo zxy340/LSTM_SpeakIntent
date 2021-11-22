@@ -1,13 +1,7 @@
-# Reference code link:
-# https://github.com/guillaume-chevalier/LSTM-Human-Activity-Recognition
-# https://youngforever.tech/posts/2020-03-07-lstm%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF/
-# https://blog.csdn.net/l8947943/article/details/103733473
-
 import numpy as np
 import torch.nn as nn
 import torch
 from torch.utils.data import DataLoader
-from LSTM import simpleLSTM
 from CNN import CNN
 import data
 import os
@@ -17,24 +11,24 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 Concepts = [
-    'Inner_Brow_Raiser',     # AU01
-    'Outer_Brow_Raiser',     # AU02
-    'Brow_Lowerer',          # AU04
-    'Upper_Lid_Raiser',      # AU05
-    'Cheek_Raiser',          # AU06
-    'Lid_Tightener',         # AU07
-    'Nose_Wrinkler',         # AU09
-    'Upper_Lip_Raiser',      # AU10
-    'Lip_Corner_Puller',     # AU12
-    'Dimpler',               # AU14
-    'Lip_Corner_Depressor',  # AU15
-    'Chin_Raiser',           # AU17
-    'Lip_stretcher',         # AU20
-    'Lip_Tightener',         # AU23
-    'Lips_part',             # AU25
-    'Jaw_Drop',              # AU26
-    'Lip_Suck',              # AU28
-    'Blink'                  # AU45
+    'Inner_Brow_Raiser',     # AU01   # 01
+    'Outer_Brow_Raiser',     # AU02   # 02
+    'Brow_Lowerer',          # AU04   # 03
+    'Upper_Lid_Raiser',      # AU05   # 04
+    'Cheek_Raiser',          # AU06   # 05
+    'Lid_Tightener',         # AU07   # 06
+    'Nose_Wrinkler',         # AU09   # 07
+    'Upper_Lip_Raiser',      # AU10   # 08
+    'Lip_Corner_Puller',     # AU12   # 09
+    'Dimpler',               # AU14   # 10
+    'Lip_Corner_Depressor',  # AU15   # 11
+    'Chin_Raiser',           # AU17   # 12
+    'Lip_stretcher',         # AU20   # 13
+    'Lip_Tightener',         # AU23   # 14
+    'Lips_part',             # AU25   # 15
+    'Jaw_Drop',              # AU26   # 16
+    'Lip_Suck',              # AU28   # 17
+    'Blink'                  # AU45   # 18
 ]
 users = [
     'adityarathore',      # 00
@@ -62,7 +56,7 @@ users = [
 ]
 label_index = 7  # indicate which concept to train the model
 data_path = '/mnt/stuff/xiaoyu/data/'  # the path where 'x_data.npy' and 'y_data.npy' are located
-model_type = 'LSTM/'
+model_type = 'CNN/'
 
 # ...........................load data...........................................
 # load data from saved files, the variable "x_data" stores mmWave data, the variable "y_data" stores labels
@@ -75,10 +69,16 @@ x_test = np.zeros((1, 128, 192))
 y_test = np.zeros((1,))
 for i in range(int(len(users)/16*9)):
     user = users[i]
+    print('Current added user is {}'.format(user))
+    if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
+        continue
     x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
     y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
 for i in range(int(len(users)/16*9), int(len(users)/4*3)):
     user = users[i]
+    print('Current added user is {}'.format(user))
+    if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
+        continue
     x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
     y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
 x_train = x_train[1:]
@@ -95,14 +95,14 @@ x_test = x_test[seq[:10000]]
 y_test = y_test[seq[:10000]]
 x_train = np.reshape(x_train, (len(x_train), len(x_train[0]), 3, -1))
 x_test = np.reshape(x_test, (len(x_test), len(x_test[0]), 3, -1))
-x_train = x_train.swapaxes(2, 3)
-x_test = x_test.swapaxes(2, 3)
+x_train = x_train.swapaxes(1, 2)
+x_test = x_test.swapaxes(1, 2)
 print("the length of x_train is {}".format(np.shape(x_train)))
 print("the length of y_train is {}".format(np.shape(y_train)))
 print("the length of x_test is {}".format(np.shape(x_test)))
 print("the length of y_test is {}".format(np.shape(y_test)))
-x_train = x_train[:, :64, :, :]
-x_test = x_test[:, :64, :, :]
+x_train = x_train[:, :, :64, :]
+x_test = x_test[:, :, :64, :]
 print("the length of x_train is {}".format(np.shape(x_train)))
 print("the length of y_train is {}".format(np.shape(y_train)))
 print("the length of x_test is {}".format(np.shape(x_test)))
@@ -225,5 +225,5 @@ with torch.no_grad():
     F1 = 2 * r * p / (r + p)
     print('Test F1 score of the model on the {} test mmWave data: {}'.format(testing_data_count, F1))
     print('Test C of the model on the {} test mmWave data: {}'.format(testing_data_count, C))
-    print('Test Accuracy of the model on the {} test mmWave data: {} %'.format(testing_data_count, 100 * correct / total))
+    print('Test Accuracy of the model on the {} test mmWave data of concept {}: {} %'.format(testing_data_count, Concepts[label_index], 100 * correct / total))
 # ..................................................................................................

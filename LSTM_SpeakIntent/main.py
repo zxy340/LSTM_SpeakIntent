@@ -16,24 +16,24 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 Concepts = [
-    'Inner_Brow_Raiser',     # AU01
-    'Outer_Brow_Raiser',     # AU02
-    'Brow_Lowerer',          # AU04
-    'Upper_Lid_Raiser',      # AU05
-    'Cheek_Raiser',          # AU06
-    'Lid_Tightener',         # AU07
-    'Nose_Wrinkler',         # AU09
-    'Upper_Lip_Raiser',      # AU10
-    'Lip_Corner_Puller',     # AU12
-    'Dimpler',               # AU14
-    'Lip_Corner_Depressor',  # AU15
-    'Chin_Raiser',           # AU17
-    'Lip_stretcher',         # AU20
-    'Lip_Tightener',         # AU23
-    'Lips_part',             # AU25
-    'Jaw_Drop',              # AU26
-    'Lip_Suck',              # AU28
-    'Blink'                  # AU45
+    'Inner_Brow_Raiser',     # AU01   # 01
+    'Outer_Brow_Raiser',     # AU02   # 02
+    'Brow_Lowerer',          # AU04   # 03
+    'Upper_Lid_Raiser',      # AU05   # 04
+    'Cheek_Raiser',          # AU06   # 05
+    'Lid_Tightener',         # AU07   # 06
+    'Nose_Wrinkler',         # AU09   # 07
+    'Upper_Lip_Raiser',      # AU10   # 08
+    'Lip_Corner_Puller',     # AU12   # 09
+    'Dimpler',               # AU14   # 10
+    'Lip_Corner_Depressor',  # AU15   # 11
+    'Chin_Raiser',           # AU17   # 12
+    'Lip_stretcher',         # AU20   # 13
+    'Lip_Tightener',         # AU23   # 14
+    'Lips_part',             # AU25   # 15
+    'Jaw_Drop',              # AU26   # 16
+    'Lip_Suck',              # AU28   # 17
+    'Blink'                  # AU45   # 18
 ]
 users = [
     'adityarathore',      # 00
@@ -74,10 +74,16 @@ x_test = np.zeros((1, 128, 192))
 y_test = np.zeros((1,))
 for i in range(int(len(users)/16*9)):
     user = users[i]
+    print('Current added user is {}'.format(user))
+    if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
+        continue
     x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
     y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
 for i in range(int(len(users)/16*9), int(len(users)/4*3)):
     user = users[i]
+    print('Current added user is {}'.format(user))
+    if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
+        continue
     x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
     y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
 x_train = x_train[1:]
