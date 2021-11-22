@@ -87,7 +87,7 @@ class simpleTDNN(TDNN):
         self.frame4 = TDNN(input_dim=512, output_dim=512, context_size=1, dilation=1)
         self.frame5 = TDNN(input_dim=512, output_dim=1500, context_size=1, dilation=1)
         self.fc1 = nn.Sequential(
-            nn.Linear(1500, 1000),
+            nn.Linear(114*1500, 1000),
             nn.ReLU(),
             nn.Sigmoid())
         self.fc2 = nn.Sequential(
@@ -107,7 +107,8 @@ class simpleTDNN(TDNN):
         out3 = self.frame3(out2)
         out4 = self.frame4(out3)
         out5 = self.frame5(out4)
-        out = self.fc1(out5)
+        out = out5.reshape(out5.size(0), -1)
+        out = self.fc1(out)
         out = self.fc2(out)
         out = self.fc3(out)
         out = self.fc4(out)
