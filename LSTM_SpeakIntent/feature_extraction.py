@@ -175,9 +175,14 @@ for layer in range(num_layers):
     fc_dic[name] = fc
 # ...................................................................................
 
-# ............................full-connected layer testing...........................
+# ............full-connected layer testing and target layer finding..................
 # we test the accuracy of each fc after the corresponding output from the loaded layer
+# we further get the target layer with the max accuracy.
+# variable "max_Acc" stores the maximum accuracy of all the layers
+# variable "max_layer" stores the name of the target layer
+# variable "max_fc" stores the parameters of the fc layer for the target layer
 # todo: then we find the target layer with the maximum accuracy and further extract the features
+max_Acc = 0
 for layer in range(num_layers):
     name = "fc" + str(layer)
     fc = fc_dic[name]
@@ -199,4 +204,13 @@ for layer in range(num_layers):
             correct += (predicted == label).sum().item()
         print('Test Accuracy of the model on the {} test mmWave data: {} %'.format(testing_data_count,
                                                                                    100 * correct / total))
+        if max_Acc < 100 * correct / total:
+            max_Acc = 100 * correct / total
+            max_layer = name
+            max_fc = fc
+print('the target layer is {} with the maximum accuracy {}'.format(max_layer, max_Acc))
+# ...................................................................................
+
+# .........................feature extraction........................................
+
 # ...................................................................................
