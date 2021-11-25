@@ -72,14 +72,14 @@ x_train = np.zeros((1, 128, 192))
 y_train = np.zeros((1,))
 x_test = np.zeros((1, 128, 192))
 y_test = np.zeros((1,))
-for i in range(int(len(users)/16*9)):
+for i in range(int(len(users)/8*3)):
     user = users[i]
     print('Current added user is {}'.format(user))
     if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
         continue
     x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
     y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
-for i in range(int(len(users)/16*9), int(len(users)/4*3)):
+for i in range(int(len(users)/8*3), int(len(users)/2)):
     user = users[i]
     print('Current added user is {}'.format(user))
     if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
