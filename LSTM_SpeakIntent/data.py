@@ -163,9 +163,11 @@ def load_data(concept, Path):
     n_frame = int(getsize(Path + 'mmwave.bin') / 2 / n_chirp / n_adc / n_channle / 2)  # get the number of frames of all the mmWave data
     data = awr1642_lazy(Path + 'mmwave.bin', n_frame, 128, n_channle, n_adc)  # get all the mmWave data
     if not os.path.exists(Path + concept + '.npz'):  # if the concept of the user is not existed, return 0 to indicate no data
-        return 0, 0
-    label = np.load(Path + concept + '.npz')['label'][:, :128]  # get all the labels
+        return 0, 0, 0, 0
+    label = np.load(Path + concept + '.npz')['label'][:, :128]  # get all the concept labels
     mask = np.load(Path + concept + '.npz')['mask'][:, :128]  # get all the masks, if mask is "False", this mmWave data is not available
+    intent_type = np.load(Path + 'intent.npz')['intent_type1'][:, :128]  # get all the speak intent labels
+    intent_level = np.load(Path + 'intent.npz')['intent_level'][:, :128]  # get all the speak intent labels
 
     # delete mmWave data which is all 0
     delete = []
@@ -176,6 +178,8 @@ def load_data(concept, Path):
     data = np.delete(data, delete, axis=0)
     label = np.delete(label, delete, axis=0)
     mask = np.delete(mask, delete, axis=0)
+    intent_type = np.delete(intent_type, delete, axis=0)
+    intent_level = np.delete(intent_level, delete, axis=0)
 
     # get data with effective labels
     yes_concept = np.argwhere(((label == 1).sum(axis=1)) == 128)  # frames that all its chirps are this concept
@@ -186,7 +190,7 @@ def load_data(concept, Path):
     # get the min frame number of yes_concept and no_concept and choose the same number of the other
     n_sample = min(np.shape(yes_concept)[0], np.shape(no_concept)[0])
     if n_sample == 0:  # if the availabel data is 0, then return 0 to indicate no data
-        return 0, 0
+        return 0, 0, 0, 0
     if n_sample > 35000:  # since the memory is not big enough, we should restrict the number of one label data within 35000 samples
         n_sample = 35000
     seq = np.concatenate([yes_concept[:n_sample], no_concept[:n_sample]], axis=0)  # concatenate yes_concept and no_concept sequences
@@ -203,12 +207,17 @@ def load_data(concept, Path):
         X[i] = process_ex(samples[i].reshape(-1, 4, 256)).reshape(1, 128, -1)
         if i % 1000 == 0:
             print(i)
-    print(X.shape)
+    print('the size of the processed mmWave data is {}'.format(X.shape))
+    print(np.shape(label))
     # get the corresponding labels of mmWave data
     Y = label[seq[:]][:, 0, 0]
-    print(Y.shape)
+    print('the size of the concept label is {}'.format(Y.shape))
+    Z1 = intent_type[seq[:]][:, 0, 0]
+    print('the size of the intent_type label is {}'.format(Z1.shape))
+    Z2 = intent_level[seq[:]][:, 0, 0]
+    print('the size of the intent_type label is {}'.format(Z2.shape))
 
-    return X, Y
+    return X, Y, Z1, Z2
 
 class GetLoader(torch.utils.data.Dataset):
     # initial function, get the data and label
@@ -219,6 +228,10 @@ class GetLoader(torch.utils.data.Dataset):
     def __getitem__(self, index):
         data = self.data[index]
         labels = self.label[index]
+        if labels == "True":
+            labels = 1
+        elif labels == "False":
+            labels = 0
         return data, labels
     # for DataLoader better dividing the data, we use this function to return the length of the data
     def __len__(self):

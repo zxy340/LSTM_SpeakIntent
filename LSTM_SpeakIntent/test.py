@@ -7,3 +7,5 @@ from LSTM import simpleLSTM
 import data
 import os
 
+a = np.zeros(10)
+print(a)

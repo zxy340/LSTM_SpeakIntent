@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch
 from torch.utils.data import DataLoader
 from LSTM import simpleLSTM
-import data
+from data import GetLoader
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -16,24 +16,24 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 Concepts = [
-    'Inner_Brow_Raiser',     # AU01   # 01
-    'Outer_Brow_Raiser',     # AU02   # 02
-    'Brow_Lowerer',          # AU04   # 03
-    'Upper_Lid_Raiser',      # AU05   # 04
-    'Cheek_Raiser',          # AU06   # 05
-    'Lid_Tightener',         # AU07   # 06
-    'Nose_Wrinkler',         # AU09   # 07
-    'Upper_Lip_Raiser',      # AU10   # 08
-    'Lip_Corner_Puller',     # AU12   # 09
-    'Dimpler',               # AU14   # 10
-    'Lip_Corner_Depressor',  # AU15   # 11
-    'Chin_Raiser',           # AU17   # 12
-    'Lip_stretcher',         # AU20   # 13
-    'Lip_Tightener',         # AU23   # 14
-    'Lips_part',             # AU25   # 15
-    'Jaw_Drop',              # AU26   # 16
-    'Lip_Suck',              # AU28   # 17
-    'Blink'                  # AU45   # 18
+    'Inner_Brow_Raiser',     # AU01   # 00
+    'Outer_Brow_Raiser',     # AU02   # 01
+    'Brow_Lowerer',          # AU04   # 02
+    'Upper_Lid_Raiser',      # AU05   # 03
+    'Cheek_Raiser',          # AU06   # 04
+    'Lid_Tightener',         # AU07   # 05
+    'Nose_Wrinkler',         # AU09   # 06
+    'Upper_Lip_Raiser',      # AU10   # 07
+    'Lip_Corner_Puller',     # AU12   # 08
+    'Dimpler',               # AU14   # 09
+    'Lip_Corner_Depressor',  # AU15   # 10
+    'Chin_Raiser',           # AU17   # 11
+    'Lip_stretcher',         # AU20   # 12
+    'Lip_Tightener',         # AU23   # 13
+    'Lips_part',             # AU25   # 14
+    'Jaw_Drop',              # AU26   # 15
+    'Lip_Suck',              # AU28   # 16
+    'Blink'                  # AU45   # 17
 ]
 users = [
     'adityarathore',      # 00
@@ -72,14 +72,16 @@ x_train = np.zeros((1, 128, 192))
 y_train = np.zeros((1,))
 x_test = np.zeros((1, 128, 192))
 y_test = np.zeros((1,))
-for i in range(int(len(users)/8*3)):
+# for i in range(int(len(users)/8*3)):
+for i in range(1):
     user = users[i]
     print('Current added user is {}'.format(user))
     if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
         continue
     x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
     y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
-for i in range(int(len(users)/8*3), int(len(users)/2)):
+# for i in range(int(len(users)/8*3), int(len(users)/2)):
+for i in range(1):
     user = users[i]
     print('Current added user is {}'.format(user))
     if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
@@ -90,6 +92,10 @@ x_train = x_train[1:]
 y_train = y_train[1:]
 x_test = x_test[1:]
 y_test = y_test[1:]
+x_train = x_train[:int(len(x_train)/8*3)]
+y_train = y_train[:int(len(y_train)/8*3)]
+x_test = x_test[int(len(x_test)/8*3):int(len(x_test)/2)]
+y_test = y_test[int(len(y_test)/8*3):int(len(y_test)/2)]
 print("the length of x_train is {}".format(np.shape(x_train)))
 print("the length of y_train is {}".format(np.shape(y_train)))
 print("the length of x_test is {}".format(np.shape(x_test)))
@@ -117,9 +123,9 @@ num_input = len(x_test[0][0])  # input parameters per timestep
 
 # ..................................................................................
 # use GetLoader to load the data and return Dataset object, which contains data and labels
-torch_data = data.GetLoader(x_train, y_train)
+torch_data = GetLoader(x_train, y_train)
 train_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
-torch_data = data.GetLoader(x_test, y_test)
+torch_data = GetLoader(x_test, y_test)
 test_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
 # ....................................................................................
 
@@ -167,7 +173,7 @@ for epoch in range(epochs):
         loss.backward()
         optimizer.step()
 
-        if i % 10 == 0:
+        if i % 30 == 0:
             print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
                    .format(epoch+1, epochs, i+1, training_data_count / 128, loss.item()))
     print('Train C of the model on the {} train mmWave data: {}'.format(training_data_count, C))
