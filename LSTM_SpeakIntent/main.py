@@ -9,6 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 from LSTM import simpleLSTM
 from data import GetLoader
+from data_loader import data_loading_LSTM
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -63,56 +64,8 @@ label_index = 0  # indicate which concept to train the model
 data_path = '/mnt/stuff/xiaoyu/data/'  # the path where 'x_data.npy' and 'y_data.npy' are located
 model_type = 'LSTM/'
 
-# ...........................load data...........................................
-# load data from saved files, the variable "x_data" stores mmWave data, the variable "y_data" stores labels
-# we split 3/4 data as training data, and 1/4 data as testing data
-# the variable "x_train" stores mmWave data for training set, the variable "y_train" stores labels for training set
-# the variable "x_test" stores mmWave data for testing set, the variable "y_test" stores labels for testing set
-x_train = np.zeros((1, 128, 192))
-y_train = np.zeros((1,))
-x_test = np.zeros((1, 128, 192))
-y_test = np.zeros((1,))
-# for i in range(int(len(users)/8*3)):
-for i in range(1):
-    user = users[i]
-    print('Current added user is {}'.format(user))
-    if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
-        continue
-    x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
-    y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
-# for i in range(int(len(users)/8*3), int(len(users)/2)):
-for i in range(1):
-    user = users[i]
-    print('Current added user is {}'.format(user))
-    if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
-        continue
-    x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
-    y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
-x_train = x_train[1:]
-y_train = y_train[1:]
-x_test = x_test[1:]
-y_test = y_test[1:]
-x_train = x_train[:int(len(x_train)/8*3)]
-y_train = y_train[:int(len(y_train)/8*3)]
-x_test = x_test[int(len(x_test)/8*3):int(len(x_test)/2)]
-y_test = y_test[int(len(y_test)/8*3):int(len(y_test)/2)]
-print("the length of x_train is {}".format(np.shape(x_train)))
-print("the length of y_train is {}".format(np.shape(y_train)))
-print("the length of x_test is {}".format(np.shape(x_test)))
-print("the length of y_test is {}".format(np.shape(y_test)))
-seq = np.arange(0, len(x_train), 1)
-np.random.shuffle(seq)
-x_train = x_train[seq[:]]
-y_train = y_train[seq[:]]
-seq = np.arange(0, len(x_test), 1)
-np.random.shuffle(seq)
-x_test = x_test[seq[:]]
-y_test = y_test[seq[:]]
-print("the length of x_train is {}".format(np.shape(x_train)))
-print("the length of y_train is {}".format(np.shape(y_train)))
-print("the length of x_test is {}".format(np.shape(x_test)))
-print("the length of y_test is {}".format(np.shape(y_test)))
-# .................................................................................
+# load data
+x_train, y_train, x_test, y_test = data_loading_LSTM(label_index, data_path)
 
 # .............basic information of training and testing set.......................
 training_data_count = len(x_train)  # number of training series
@@ -166,7 +119,7 @@ for epoch in range(epochs):
 
         optimizer.zero_grad()
         # forward pass
-        outputs = model(data.float())
+        outputs, _, _ = model(data.float())
         loss = criterion(outputs, label)
 
         # backward and optimize
@@ -201,7 +154,7 @@ with torch.no_grad():
         data = data.to(device)
         label = label.to(device)
         label = label.squeeze()
-        outputs = model(data.float())
+        outputs, _, _ = model(data.float())
         _, predicted = torch.max(outputs, 1)
         total += label.size(0)
         correct += (predicted == label).sum().item()

@@ -24,5 +24,4 @@ class simpleLSTM(nn.Module):
 
         # select the output of the last moment.
         out = self.fc(out[:, -1, :])
-        # return out
         return out, h_n, c_n
