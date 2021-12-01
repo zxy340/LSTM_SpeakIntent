@@ -93,4 +93,4 @@ if __name__ == '__main__':
     level_test = np.load('data/level_test.npy')
 
     # speak intent model training and testing
-    speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, label_test, level_test, features, layers)
+    speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, label_test, level_test, features, layers, model_type)
