@@ -2,7 +2,7 @@
 # https://github.com/guillaume-chevalier/LSTM-Human-Activity-Recognition
 # https://youngforever.tech/posts/2020-03-07-lstm%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF/
 # https://blog.csdn.net/l8947943/article/details/103733473
-
+import numpy as np
 import torch
 from data_loader import data_loading_LSTM
 from main_function import LSTM_train
@@ -63,6 +63,7 @@ model_type = 'LSTM/'
 for label_index in range(len(Concepts)):
     # load data
     x_train, y_train, x_test, y_test = data_loading_LSTM(label_index, data_path)
+    print('the size of x_train is {}'.format(np.shape(x_train)))
     # if the current concept doesn't have data, then jump to the next concept
     if len(x_train) == 0:
         continue

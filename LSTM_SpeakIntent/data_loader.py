@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -29,27 +30,82 @@ Concepts = [
 users = [
     'adityarathore',      # 00
     'Caitlin_Chan',       # 01
-    'Amy_Zhang',          # 02
-    'Anarghya',           # 03
-    'aniruddh',           # 04
-    'anthony',            # 05
-    'baron_huang',        # 06
-    'bhuiyan',            # 07
-    'chandler',           # 08
-    'chenyi_zou',         # 09
-    'deepak_joseph',      # 10
-    'dunjiong_lin',       # 11
-    'Eric_Kim',           # 12
-    'FrankYang',          # 13
-    'giorgi_datashvili',  # 14
-    'Huining_Li',         # 15
-    'jonathan',           # 16
-    'Kunjie_Lin',         # 17
-    'lauren',             # 18
-    'moohliton',          # 19
-    'phoung',             # 20
-    'Tracy_chen'          # 21
+    # 'Amy_Zhang',          # 02
+    # 'Anarghya',           # 03
+    # 'aniruddh',           # 04
+    # 'anthony',            # 05
+    # 'baron_huang',        # 06
+    # 'bhuiyan',            # 07
+    # 'chandler',           # 08
+    # 'chenyi_zou',         # 09
+    # 'deepak_joseph',      # 10
+    # 'dunjiong_lin',       # 11
+    # 'Eric_Kim',           # 12
+    # 'FrankYang',          # 13
+    # 'giorgi_datashvili',  # 14
+    # 'Huining_Li',         # 15
+    # 'jonathan',           # 16
+    # 'Kunjie_Lin',         # 17
+    # 'lauren',             # 18
+    # 'moohliton',          # 19
+    # 'phoung',             # 20
+    # 'Tracy_chen'          # 21
 ]
+
+def CFAR(data, T, G, offset):
+    data = data.squeeze()
+    # print('the size of the temporary processed data should be (128, 192), actually it is {}'.format(np.shape(data)))
+    fig = plt.figure(1)
+    ax1 = plt.subplot(3, 1, 1)
+    # 在画纸1上绘图
+    plt.title('the figure of signal before cfar')
+    plt.plot(data[0])
+
+    data = data.reshape(128, 3, 64)
+    # print('the size of the temporary processed data should be (128, 3, 64), actually it is {}'.format(np.shape(data)))
+
+    # Vector to hold threshold values
+    threshold_cfar = []
+
+    # Vector to hold final signal after thresholding
+    signal_cfar = []
+
+    for chirp in range(128):
+        threshold_chirp = []
+        signal_chirp = []
+        for channel in range(len(data[chirp])):
+            # Slide window across the signal length
+            for i in range((len(data[chirp][channel]) - (2*G+2*T+1))):
+
+                # Determine the noise threshold by measuring it within the training cells
+                noise_level = sum(data[chirp][channel][i:i+T-1]) + sum(data[chirp][channel][i+T+2*G:i+2*T+2*G])
+
+                # Measuring the signal within the CUT
+                threshold = (noise_level / (2*T)) * offset
+                threshold_chirp.append(threshold)
+
+                signal = data[chirp][channel][i+T+G]
+
+                # Filter the signal above the threshold
+                if (signal < threshold):
+                    signal = 0
+                signal_chirp.append(signal)
+
+        threshold_cfar.append(threshold_chirp)
+        signal_cfar.append(signal_chirp)
+    # 选择画纸2
+    ax2 = plt.subplot(3, 1, 2)
+    # 在画纸2上绘图
+    plt.title('the figure of signal after cfar')
+    plt.plot(signal_cfar[0])
+    # 选择画纸3
+    ax3 = plt.subplot(3, 1, 3)
+    # 在画纸3上绘图
+    plt.title('the figure of threshold')
+    plt.plot(threshold_cfar[0])
+    # 显示图像
+    plt.show()
+    return signal_cfar
 
 def data_loading_LSTM(label_index, data_path):
     """
@@ -93,7 +149,7 @@ def data_loading_LSTM(label_index, data_path):
                                  axis=0)
     # for i in range(int(len(users)/8*3), int(len(users)/2)):
     for i in range(1):
-        user = users[i]
+        user = users[i+1]
         print('Current added user is {}'.format(user))
         if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
             continue
@@ -105,14 +161,14 @@ def data_loading_LSTM(label_index, data_path):
     y_train = y_train[1:]
     x_test = x_test[1:]
     y_test = y_test[1:]
-    x_train = x_train[:int(len(x_train) / 8 * 3)]
-    y_train = y_train[:int(len(y_train) / 8 * 3)]
-    x_test = x_test[int(len(x_test) / 8 * 3):int(len(x_test) / 2)]
-    y_test = y_test[int(len(y_test) / 8 * 3):int(len(y_test) / 2)]
-    print("the length of x_train is {}".format(np.shape(x_train)))
-    print("the length of y_train is {}".format(np.shape(y_train)))
-    print("the length of x_test is {}".format(np.shape(x_test)))
-    print("the length of y_test is {}".format(np.shape(y_test)))
+    # x_train = x_train[:int(len(x_train) / 8 * 3)]
+    # y_train = y_train[:int(len(y_train) / 8 * 3)]
+    # x_test = x_test[int(len(x_test) / 8 * 3):int(len(x_test) / 2)]
+    # y_test = y_test[int(len(y_test) / 8 * 3):int(len(y_test) / 2)]
+    # print("the length of x_train is {}".format(np.shape(x_train)))
+    # print("the length of y_train is {}".format(np.shape(y_train)))
+    # print("the length of x_test is {}".format(np.shape(x_test)))
+    # print("the length of y_test is {}".format(np.shape(y_test)))
     seq = np.arange(0, len(x_train), 1)
     np.random.shuffle(seq)
     x_train = x_train[seq[:]]
@@ -121,12 +177,43 @@ def data_loading_LSTM(label_index, data_path):
     np.random.shuffle(seq)
     x_test = x_test[seq[:]]
     y_test = y_test[seq[:]]
-    print("the length of x_train is {}".format(np.shape(x_train)))
-    print("the length of y_train is {}".format(np.shape(y_train)))
-    print("the length of x_test is {}".format(np.shape(x_test)))
-    print("the length of y_test is {}".format(np.shape(y_test)))
+    # print("the length of x_train is {}".format(np.shape(x_train)))
+    # print("the length of y_train is {}".format(np.shape(y_train)))
+    # print("the length of x_test is {}".format(np.shape(x_test)))
+    # print("the length of y_test is {}".format(np.shape(y_test)))
 
-    return x_train, y_train, x_test, y_test
+    # fig = plt.figure(1, figsize=(16, 16))
+    # count = 0
+    # for i in range(len(x_train)):
+    #     if y_train[i] == 1:
+    #         count += 1
+    #         if count > 16:
+    #             break
+    #         ax = fig.add_subplot(4, 4, count)
+    #         plt.plot(x_train[i][127])
+    #         # plt.title('the {}th frame'.format(i))
+    # fig = plt.figure(2, figsize=(16, 16))
+    # count = 0
+    # for i in range(len(x_test)):
+    #     if y_test[i] == 1:
+    #         count += 1
+    #         if count > 16:
+    #             break
+    #         ax = fig.add_subplot(4, 4, count)
+    #         plt.plot(x_test[i][127])
+    #         # plt.title('the {}th frame'.format(i))
+    # plt.show()
+
+    x_train_cfar = []
+    for i in range(len(x_train)):
+        x_train_cfar.append(CFAR(x_train[i], T=12, G=4, offset=1))
+    x_test_cfar = []
+    for i in range(len(x_test)):
+        x_test_cfar.append(CFAR(x_test[i], T=12, G=4, offset=1))
+    x_train_cfar = np.array(x_train_cfar)
+    x_test_cfar = np.array(x_test_cfar)
+
+    return x_train_cfar, y_train, x_test_cfar, y_test
 
 def data_loading_concept(label_index, data_path):
     """

@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from os.path import getsize
+import matplotlib.pyplot as plt
 import os
 
 def awr1642_lazy(dfile, num_frame, num_chirp, num_channel=4, num_sample=256):
