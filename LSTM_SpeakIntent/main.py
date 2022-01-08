@@ -68,4 +68,3 @@ for label_index in range(len(Concepts)):
     if len(x_train) == 0:
         continue
     LSTM_train(x_train, y_train, x_test, y_test, label_index, model_type)
-

@@ -52,14 +52,14 @@ users = [
     # 'Tracy_chen'          # 21
 ]
 
-def CFAR(data, T, G, offset):
+def CFAR_CA(data, T, G, offset):
     data = data.squeeze()
     # print('the size of the temporary processed data should be (128, 192), actually it is {}'.format(np.shape(data)))
-    fig = plt.figure(1)
-    ax1 = plt.subplot(3, 1, 1)
-    # 在画纸1上绘图
-    plt.title('the figure of signal before cfar')
-    plt.plot(data[0])
+    # fig = plt.figure(1)
+    # ax1 = plt.subplot(3, 1, 1)
+    # # 在画纸1上绘图
+    # plt.title('the figure of signal before cfar')
+    # plt.plot(data[0])
 
     data = data.reshape(128, 3, 64)
     # print('the size of the temporary processed data should be (128, 3, 64), actually it is {}'.format(np.shape(data)))
@@ -75,10 +75,10 @@ def CFAR(data, T, G, offset):
         signal_chirp = []
         for channel in range(len(data[chirp])):
             # Slide window across the signal length
-            for i in range((len(data[chirp][channel]) - (2*G+2*T+1))):
+            for i in range((len(data[chirp][channel]) - (2*G+2*T))):
 
                 # Determine the noise threshold by measuring it within the training cells
-                noise_level = sum(data[chirp][channel][i:i+T-1]) + sum(data[chirp][channel][i+T+2*G:i+2*T+2*G])
+                noise_level = sum(data[chirp][channel][i:i+T]) + sum(data[chirp][channel][i+T+2*G+1:i+2*T+2*G+2])
 
                 # Measuring the signal within the CUT
                 threshold = (noise_level / (2*T)) * offset
@@ -87,24 +87,195 @@ def CFAR(data, T, G, offset):
                 signal = data[chirp][channel][i+T+G]
 
                 # Filter the signal above the threshold
-                if (signal < threshold):
+                if signal < threshold:
                     signal = 0
                 signal_chirp.append(signal)
 
         threshold_cfar.append(threshold_chirp)
         signal_cfar.append(signal_chirp)
-    # 选择画纸2
-    ax2 = plt.subplot(3, 1, 2)
-    # 在画纸2上绘图
-    plt.title('the figure of signal after cfar')
-    plt.plot(signal_cfar[0])
-    # 选择画纸3
-    ax3 = plt.subplot(3, 1, 3)
-    # 在画纸3上绘图
-    plt.title('the figure of threshold')
-    plt.plot(threshold_cfar[0])
-    # 显示图像
-    plt.show()
+    # # 选择画纸2
+    # ax2 = plt.subplot(3, 1, 2)
+    # # 在画纸2上绘图
+    # plt.title('the figure of signal after cfar')
+    # plt.plot(signal_cfar[0])
+    # # 选择画纸3
+    # ax3 = plt.subplot(3, 1, 3)
+    # # 在画纸3上绘图
+    # plt.title('the figure of threshold')
+    # plt.plot(threshold_cfar[0])
+    # # 显示图像
+    # plt.show()
+    return signal_cfar
+
+def CFAR_MIN(data, T, G, offset):
+    data = data.squeeze()
+    # print('the size of the temporary processed data should be (128, 192), actually it is {}'.format(np.shape(data)))
+    # fig = plt.figure(1)
+    # ax1 = plt.subplot(3, 1, 1)
+    # # 在画纸1上绘图
+    # plt.title('the figure of signal before cfar')
+    # plt.plot(data[0])
+
+    data = data.reshape(128, 3, 64)
+    # print('the size of the temporary processed data should be (128, 3, 64), actually it is {}'.format(np.shape(data)))
+
+    # Vector to hold threshold values
+    threshold_cfar = []
+
+    # Vector to hold final signal after thresholding
+    signal_cfar = []
+
+    for chirp in range(128):
+        threshold_chirp = []
+        signal_chirp = []
+        for channel in range(len(data[chirp])):
+            # Slide window across the signal length
+            for i in range((len(data[chirp][channel]) - (2*G+2*T))):
+
+                # Determine the noise threshold by measuring it within the training cells
+                noise_level = min(sum(data[chirp][channel][i:i+T]), sum(data[chirp][channel][i+T+2*G+1:i+2*T+2*G+1]))
+
+                # Measuring the signal within the CUT
+                threshold = (noise_level / T) * offset
+                threshold_chirp.append(threshold)
+
+                signal = data[chirp][channel][i+T+G]
+
+                # Filter the signal above the threshold
+                if signal < threshold:
+                    signal = 0
+                signal_chirp.append(signal)
+
+        threshold_cfar.append(threshold_chirp)
+        signal_cfar.append(signal_chirp)
+    # # 选择画纸2
+    # ax2 = plt.subplot(3, 1, 2)
+    # # 在画纸2上绘图
+    # plt.title('the figure of signal after cfar')
+    # plt.plot(signal_cfar[0])
+    # # 选择画纸3
+    # ax3 = plt.subplot(3, 1, 3)
+    # # 在画纸3上绘图
+    # plt.title('the figure of threshold')
+    # plt.plot(threshold_cfar[0])
+    # # 显示图像
+    # plt.show()
+    return signal_cfar
+
+def CFAR_MAX(data, T, G, offset):
+    data = data.squeeze()
+    # print('the size of the temporary processed data should be (128, 192), actually it is {}'.format(np.shape(data)))
+    # fig = plt.figure(1)
+    # ax1 = plt.subplot(3, 1, 1)
+    # # 在画纸1上绘图
+    # plt.title('the figure of signal before cfar')
+    # plt.plot(data[0])
+
+    data = data.reshape(128, 3, 64)
+    # print('the size of the temporary processed data should be (128, 3, 64), actually it is {}'.format(np.shape(data)))
+
+    # Vector to hold threshold values
+    threshold_cfar = []
+
+    # Vector to hold final signal after thresholding
+    signal_cfar = []
+
+    for chirp in range(128):
+        threshold_chirp = []
+        signal_chirp = []
+        for channel in range(len(data[chirp])):
+            # Slide window across the signal length
+            for i in range((len(data[chirp][channel]) - (2*G+2*T))):
+
+                # Determine the noise threshold by measuring it within the training cells
+                noise_level = max(sum(data[chirp][channel][i:i+T]), sum(data[chirp][channel][i+T+2*G+1:i+2*T+2*G+1]))
+
+                # Measuring the signal within the CUT
+                threshold = (noise_level / T) * offset
+                threshold_chirp.append(threshold)
+
+                signal = data[chirp][channel][i+T+G]
+
+                # Filter the signal above the threshold
+                if signal < threshold:
+                    signal = 0
+                signal_chirp.append(signal)
+
+        threshold_cfar.append(threshold_chirp)
+        signal_cfar.append(signal_chirp)
+    # # 选择画纸2
+    # ax2 = plt.subplot(3, 1, 2)
+    # # 在画纸2上绘图
+    # plt.title('the figure of signal after cfar')
+    # plt.plot(signal_cfar[0])
+    # # 选择画纸3
+    # ax3 = plt.subplot(3, 1, 3)
+    # # 在画纸3上绘图
+    # plt.title('the figure of threshold')
+    # plt.plot(threshold_cfar[0])
+    # # 显示图像
+    # plt.show()
+    return signal_cfar
+
+def CFAR_OS(data, T, G, offset, k):
+    data = data.squeeze()
+    # print('the size of the temporary processed data should be (128, 192), actually it is {}'.format(np.shape(data)))
+    # fig = plt.figure(1)
+    # ax1 = plt.subplot(3, 1, 1)
+    # # 在画纸1上绘图
+    # plt.title('the figure of signal before cfar')
+    # plt.plot(data[0])
+
+    data = data.reshape(128, 3, 64)
+    # print('the size of the temporary processed data should be (128, 3, 64), actually it is {}'.format(np.shape(data)))
+
+    # Vector to hold threshold values
+    threshold_cfar = []
+
+    # Vector to hold final signal after thresholding
+    signal_cfar = []
+
+    for chirp in range(128):
+        threshold_chirp = []
+        signal_chirp = []
+        for channel in range(len(data[chirp])):
+            # Slide window across the signal length
+            for i in range((len(data[chirp][channel]) - (2*G+2*T))):
+                temp = []
+
+                # Determine the noise threshold by measuring it within the training cells
+                for j in range(i, i+T):
+                    temp.append(data[chirp, channel, j])
+                for j in range(i+T+2*G+1, i+2*T+2*G+1):
+                    temp.append(data[chirp, channel, j])
+                temp.sort()
+                noise_level = temp[k-1]
+
+                # Measuring the signal within the CUT
+                threshold = noise_level * offset
+                threshold_chirp.append(threshold)
+
+                signal = data[chirp, channel, i+T+G]
+
+                # Filter the signal above the threshold
+                if signal < threshold:
+                    signal = 0
+                signal_chirp.append(signal)
+
+        threshold_cfar.append(threshold_chirp)
+        signal_cfar.append(signal_chirp)
+    # # 选择画纸2
+    # ax2 = plt.subplot(3, 1, 2)
+    # # 在画纸2上绘图
+    # plt.title('the figure of signal after cfar')
+    # plt.plot(signal_cfar[0])
+    # # 选择画纸3
+    # ax3 = plt.subplot(3, 1, 3)
+    # # 在画纸3上绘图
+    # plt.title('the figure of threshold')
+    # plt.plot(threshold_cfar[0])
+    # # 显示图像
+    # plt.show()
     return signal_cfar
 
 def data_loading_LSTM(label_index, data_path):
@@ -206,10 +377,16 @@ def data_loading_LSTM(label_index, data_path):
 
     x_train_cfar = []
     for i in range(len(x_train)):
-        x_train_cfar.append(CFAR(x_train[i], T=12, G=4, offset=1))
+        # x_train_cfar.append(CFAR_CA(x_train[i], T=5, G=15, offset=1))
+        # x_train_cfar.append(CFAR_MIN(x_train[i], T=5, G=15, offset=1))
+        # x_train_cfar.append(CFAR_MAX(x_train[i], T=5, G=15, offset=1))
+        x_train_cfar.append(CFAR_OS(x_train[i], T=5, G=15, offset=1, k=3))
     x_test_cfar = []
     for i in range(len(x_test)):
-        x_test_cfar.append(CFAR(x_test[i], T=12, G=4, offset=1))
+        # x_test_cfar.append(CFAR_CA(x_test[i], T=5, G=15, offset=1))
+        # x_test_cfar.append(CFAR_MIN(x_test[i], T=5, G=15, offset=1))
+        # x_test_cfar.append(CFAR_MAX(x_test[i], T=5, G=15, offset=1))
+        x_test_cfar.append(CFAR_OS(x_test[i], T=5, G=15, offset=1, k=3))
     x_train_cfar = np.array(x_train_cfar)
     x_test_cfar = np.array(x_test_cfar)
 

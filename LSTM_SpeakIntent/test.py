@@ -7,5 +7,5 @@ from LSTM import simpleLSTM
 import data
 import os
 
-a = np.zeros(10)
-print(a)
+a = [1, 2, 3, 4, 5, 6]
+print(min(sum(a[0:3]), sum(a[3:])))
