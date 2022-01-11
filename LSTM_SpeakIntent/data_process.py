@@ -12,23 +12,23 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 Concepts = [
     'Inner_Brow_Raiser',     # AU01   # 00
-    'Outer_Brow_Raiser',     # AU02   # 01
-    'Brow_Lowerer',          # AU04   # 02
-    'Upper_Lid_Raiser',      # AU05   # 03
-    'Cheek_Raiser',          # AU06   # 04
-    'Lid_Tightener',         # AU07   # 05
-    'Nose_Wrinkler',         # AU09   # 06
-    'Upper_Lip_Raiser',      # AU10   # 07
-    'Lip_Corner_Puller',     # AU12   # 08
-    'Dimpler',               # AU14   # 09
-    'Lip_Corner_Depressor',  # AU15   # 10
-    'Chin_Raiser',           # AU17   # 11
-    'Lip_stretcher',         # AU20   # 12
-    'Lip_Tightener',         # AU23   # 13
-    'Lips_part',             # AU25   # 14
-    'Jaw_Drop',              # AU26   # 15
-    'Lip_Suck',              # AU28   # 16
-    'Blink'                  # AU45   # 17
+    # 'Outer_Brow_Raiser',     # AU02   # 01
+    # 'Brow_Lowerer',          # AU04   # 02
+    # 'Upper_Lid_Raiser',      # AU05   # 03
+    # 'Cheek_Raiser',          # AU06   # 04
+    # 'Lid_Tightener',         # AU07   # 05
+    # 'Nose_Wrinkler',         # AU09   # 06
+    # 'Upper_Lip_Raiser',      # AU10   # 07
+    # 'Lip_Corner_Puller',     # AU12   # 08
+    # 'Dimpler',               # AU14   # 09
+    # 'Lip_Corner_Depressor',  # AU15   # 10
+    # 'Chin_Raiser',           # AU17   # 11
+    # 'Lip_stretcher',         # AU20   # 12
+    # 'Lip_Tightener',         # AU23   # 13
+    # 'Lips_part',             # AU25   # 14
+    # 'Jaw_Drop',              # AU26   # 15
+    # 'Lip_Suck',              # AU28   # 16
+    # 'Blink'                  # AU45   # 17
 ]
 users = [
     'adityarathore',      # 00

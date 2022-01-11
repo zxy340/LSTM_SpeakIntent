@@ -94,8 +94,8 @@ def LSTM_train(x_train, y_train, x_test, y_test, label_index, model_type):
 
     # .............Hyper Parameters and initial model parameters..........................
     epochs = 20
-    hidden_size = 64
-    num_layers = 5
+    hidden_size = 16
+    num_layers = 2
     num_classes = 2
     lr = 0.01           # learning rate
     # initial model

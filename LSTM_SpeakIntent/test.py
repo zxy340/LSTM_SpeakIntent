@@ -7,5 +7,5 @@ from LSTM import simpleLSTM
 import data
 import os
 
-a = np.zeros(10)
-print(a)
+a = np.tile(np.arange(1, 129, 1, dtype=int), (1000, 1))
+print(type(a))
