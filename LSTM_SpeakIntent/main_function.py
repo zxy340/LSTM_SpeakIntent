@@ -28,7 +28,7 @@ Concepts = [
     'Lips_part',             # AU25   # 14
     'Jaw_Drop',              # AU26   # 15
     'Lip_Suck',              # AU28   # 16
-    'Blink'                  # AU45   # 17
+    # 'Blink'                  # AU45   # 17
 ]
 users = [
     'adityarathore',      # 00
@@ -52,7 +52,7 @@ users = [
     'lauren',             # 18
     'moohliton',          # 19
     'phoung',             # 20
-    'Tracy_chen'          # 21
+    # 'Tracy_chen'          # 21
 ]
 def LSTM_train(x_train, y_train, x_test, y_test, label_index, model_type):
     """
@@ -95,7 +95,7 @@ def LSTM_train(x_train, y_train, x_test, y_test, label_index, model_type):
     # .............Hyper Parameters and initial model parameters..........................
     epochs = 20
     hidden_size = 16
-    num_layers = 2
+    num_layers = 5
     num_classes = 2
     lr = 0.01           # learning rate
     # initial model
@@ -242,7 +242,7 @@ def feature_extrac(x_train, y_train, x_test, y_test, label_index, model_type):
     # ....................................................................................
 
     # .............Hyper Parameters and initial model parameters..........................
-    hidden_size = 64
+    hidden_size = 16
     num_layers = 5
     num_classes = 2
     lr = 0.01           # learning rate
@@ -390,11 +390,11 @@ def speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, 
     # ..................................................................................
 
     # .............Hyper Parameters and initial model parameters..........................
-    epochs = 20
-    hidden_size = 64
+    epochs = 50
+    hidden_size = 16
     num_layers = 5
     num_classes = 2
-    batch_size = 128
+    batch_size = 8
     lr = 0.01           # learning rate
     # initial model
     model = simpleLSTM(num_input, hidden_size, num_layers, num_classes).to(device)
@@ -410,20 +410,27 @@ def speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, 
 
     # .............load the target layer and train the speak intent model..................
     feature_layer = torch.zeros(batch_size, len(Concepts))
-    fc = nn.Linear(len(Concepts), num_classes, bias=False).to(device)
+    fc = nn.Sequential(
+        nn.Dropout(p=0.3),
+        nn.Linear(len(Concepts), num_classes, bias=False),
+    ).to(device)
     # loss and optimizer
-    criterion = nn.MSELoss().to(device)
+    criterion = nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.Adam(fc.parameters(), lr)
 
     # train the model
+    # model.eval()
+    for i in model.parameters():
+        i.requires_grad = False
     for epoch in range(epochs):
         C = np.zeros(2)
-        if epoch % 5 == 0:
-            lr = lr / 10
+        # if epoch % 10 == 0:
+        #     lr = lr / 2
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
         for i, (data, labels) in enumerate(train_data):
-            if len(data) < 128:
+            if len(data) < batch_size:
+                print(len(data))
                 continue
             data = data.to(device)
             for label_index in range(len(Concepts)):
@@ -435,8 +442,7 @@ def speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, 
                     # print('the model of {} has been successfully loaded!'.format(Concepts[label_index]))
                     # .....................................................................................
                     output_unused, h_n, c_n = model(data.float())
-                    feature_layer[:, label_index].data = h_n[layers[label_index], :, features[label_index]].data
-
+                    feature_layer[:, label_index] = h_n[layers[label_index], :, features[label_index]]
             feature_layer = feature_layer.to(device)
             label = []
             if labels[0].size() != num_classes:
@@ -458,9 +464,9 @@ def speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, 
             loss.backward()
             optimizer.step()
 
-            if i % 30 == 0:
-                print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
-                       .format(epoch+1, epochs, i+1, training_data_count / 128, loss.item()))
+            # if i % 30 == 0:
+            print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
+                   .format(epoch+1, epochs, i+1, training_data_count / batch_size, loss.item()))
         print('Train C of the model on the {} train mmWave data: {}'.format(training_data_count, C))
     # .....................................................................................
 
@@ -476,7 +482,7 @@ def speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, 
         FN = 0
         FP = 0
         for data, label in test_data:
-            if len(data) < 128:
+            if len(data) < batch_size:
                 print(len(data))
                 continue
             data = data.to(device)
@@ -489,7 +495,7 @@ def speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, 
                     # print('the model of {} has been successfully loaded!'.format(Concepts[label_index]))
                     # .....................................................................................
                     output_unused, h_n, c_n = model(data.float())
-                    feature_layer[:, label_index].data = h_n[layers[label_index], :, features[label_index]].data
+                    feature_layer[:, label_index] = h_n[layers[label_index], :, features[label_index]]
             feature_layer = feature_layer.to(device)
             label = label.to(device)
             label = label.squeeze()

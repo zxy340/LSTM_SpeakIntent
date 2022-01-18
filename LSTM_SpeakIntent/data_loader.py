@@ -24,7 +24,7 @@ Concepts = [
     'Lips_part',             # AU25   # 14
     'Jaw_Drop',              # AU26   # 15
     'Lip_Suck',              # AU28   # 16
-    'Blink'                  # AU45   # 17
+    # 'Blink'                  # AU45   # 17
 ]
 users = [
     'adityarathore',      # 00
@@ -48,7 +48,7 @@ users = [
     'lauren',             # 18
     'moohliton',          # 19
     'phoung',             # 20
-    'Tracy_chen'          # 21
+    # 'Tracy_chen'          # 21
 ]
 
 def data_loading_LSTM(label_index, data_path):
@@ -82,10 +82,10 @@ def data_loading_LSTM(label_index, data_path):
     x_test = np.zeros((1, 128, 192))
     y_test = np.zeros((1,))
     # for i in range(int(len(users)/8*3)):
-    # for i in range(1):
-    for i in range(int(len(users)/4*3)):
+    for i in range(1):
+    # for i in range(int(len(users)/4*3)):
         user = users[i]
-        print('Current added user is {}'.format(user))
+        print('Current added user for training is {}'.format(user))
         if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
             continue
         x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')),
@@ -93,10 +93,10 @@ def data_loading_LSTM(label_index, data_path):
         y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')),
                                  axis=0)
     # for i in range(int(len(users)/8*3), int(len(users)/2)):
-    # for i in range(1):
-    for i in range(int(len(users)/4*3), int(len(users))):
+    for i in range(1):
+    # for i in range(int(len(users)/4*3), int(len(users))):
         user = users[i]
-        print('Current added user is {}'.format(user))
+        print('Current added user for testing is {}'.format(user))
         if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
             continue
         x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')),

@@ -191,8 +191,8 @@ def load_data(concept, Path):
     n_sample = min(np.shape(yes_concept)[0], np.shape(no_concept)[0])
     if n_sample == 0:  # if the availabel data is 0, then return 0 to indicate no data
         return 0, 0, 0, 0
-    if n_sample > 35000:  # since the memory is not big enough, we should restrict the number of one label data within 35000 samples
-        n_sample = 35000
+    if n_sample > 10000:  # since the memory is not big enough, we should restrict the number of one label data within 35000 samples
+        n_sample = 10000
     seq = np.concatenate([yes_concept[:n_sample], no_concept[:n_sample]], axis=0)  # concatenate yes_concept and no_concept sequences
     print(np.shape(seq))
     np.random.shuffle(seq)  # randomly shuffle the sequences

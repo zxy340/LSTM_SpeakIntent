@@ -26,7 +26,7 @@ Concepts = [
     'Lips_part',             # AU25   # 14
     'Jaw_Drop',              # AU26   # 15
     'Lip_Suck',              # AU28   # 16
-    'Blink'                  # AU45   # 17
+    # 'Blink'                  # AU45   # 17
 ]
 users = [
     'adityarathore',      # 00
@@ -50,7 +50,7 @@ users = [
     'lauren',             # 18
     'moohliton',          # 19
     'phoung',             # 20
-    'Tracy_chen'          # 21
+    # 'Tracy_chen'          # 21
 ]
 
 if __name__ == '__main__':
@@ -92,5 +92,46 @@ if __name__ == '__main__':
     label_test = np.load('data/label_test.npy')
     level_test = np.load('data/level_test.npy')
 
-    # speak intent model training and testing
-    speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, label_test, level_test, features, layers, model_type)
+    # get data with effective labels
+    yes_concept = np.argwhere(label_train == 1)  # frames that all its chirps are this concept
+    no_concept = np.argwhere(label_train == 0)  # frames that all its chirps are not this concept
+    print('the shape of the data with speak intent label for training is {}'.format(np.shape(yes_concept)))
+    print('the shape of the data without speak intent label for training is {}'.format(np.shape(no_concept)))
+    # get the min frame number of yes_concept and no_concept and choose the same number of the other
+    n_sample = min(np.shape(yes_concept)[0], np.shape(no_concept)[0])
+    if n_sample == 0:  # if the availabel data is 0, then return 0 to indicate no data
+        print("We don't have data for speak intent training and testing!")
+    if n_sample > 35000:  # since the memory is not big enough, we should restrict the number of one label data within 35000 samples
+        n_sample = 35000
+    seq_train = np.concatenate([yes_concept[:n_sample], no_concept[:n_sample]], axis=0)  # concatenate yes_concept and no_concept sequences
+    np.random.shuffle(seq_train)  # randomly shuffle the sequences
+    # x_train = x_train[seq_train[:int(len(seq_train)/9*8)].squeeze()]
+    # y_train = y_train[seq_train[:int(len(seq_train)/9*8)].squeeze()]
+    # label_train = label_train[seq_train[:int(len(seq_train)/9*8)].squeeze()]
+    # level_train = level_train[seq_train[:int(len(seq_train)/9*8)].squeeze()]
+
+    # get data with effective labels
+    yes_concept = np.argwhere(label_test == 1)  # frames that all its chirps are this concept
+    no_concept = np.argwhere(label_test == 0)  # frames that all its chirps are not this concept
+    print('the shape of the data with speak intent label for testing is {}'.format(np.shape(yes_concept)))
+    print('the shape of the data without speak intent label for testing is {}'.format(np.shape(no_concept)))
+    # get the min frame number of yes_concept and no_concept and choose the same number of the other
+    n_sample = min(np.shape(yes_concept)[0], np.shape(no_concept)[0])
+    if n_sample == 0:  # if the availabel data is 0, then return 0 to indicate no data
+        print("We don't have data for speak intent training and testing!")
+    if n_sample > 35000:  # since the memory is not big enough, we should restrict the number of one label data within 35000 samples
+        n_sample = 35000
+    seq_test = np.concatenate([yes_concept[:n_sample], no_concept[:n_sample]], axis=0)  # concatenate yes_concept and no_concept sequences
+    np.random.shuffle(seq_test)  # randomly shuffle the sequences
+    x_test = np.concatenate([x_train[seq_train[int(len(seq_train)/9*8):].squeeze()], x_test[seq_test[:].squeeze()]], axis=0)
+    y_test = np.concatenate([y_train[seq_train[int(len(seq_train)/9*8):].squeeze()], y_test[seq_test[:].squeeze()]], axis=0)
+    label_test = np.concatenate([label_train[seq_train[int(len(seq_train)/9*8):].squeeze()], label_test[seq_test[:].squeeze()]], axis=0)
+    level_test = np.concatenate([level_train[seq_train[int(len(seq_train)/9*8):].squeeze()], level_test[seq_test[:].squeeze()]], axis=0)
+    x_train = x_train[seq_train[:int(len(seq_train)/9*8)].squeeze()]
+    y_train = y_train[seq_train[:int(len(seq_train)/9*8)].squeeze()]
+    label_train = label_train[seq_train[:int(len(seq_train)/9*8)].squeeze()]
+    level_train = level_train[seq_train[:int(len(seq_train)/9*8)].squeeze()]
+
+    if len(x_train > 0) & len(x_test) > 0:
+        # speak intent model training and testing
+        speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, label_test, level_test, features, layers, model_type)
