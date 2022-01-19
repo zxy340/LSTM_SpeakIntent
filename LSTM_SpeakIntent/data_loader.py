@@ -79,50 +79,45 @@ def data_loading_LSTM(label_index, data_path):
     """
     x_train = np.zeros((1, 128, 192))
     y_train = np.zeros((1,))
-    x_test = np.zeros((1, 128, 192))
-    y_test = np.zeros((1,))
+    # x_test = np.zeros((1, 128, 192))
+    # y_test = np.zeros((1,))
     # for i in range(int(len(users)/8*3)):
-    for i in range(1):
+    for i in range(int(len(users))):
+    # for i in range(1):
     # for i in range(int(len(users)/4*3)):
         user = users[i]
         print('Current added user for training is {}'.format(user))
         if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
             continue
-        x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')),
+        current_user_xdata = np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')
+        x_train = np.concatenate((x_train, current_user_xdata[:10000]),
                                  axis=0)
-        y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')),
+        current_user_ydata = np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')
+        y_train = np.concatenate((y_train, current_user_ydata[:10000]),
                                  axis=0)
     # for i in range(int(len(users)/8*3), int(len(users)/2)):
-    for i in range(1):
+    # for i in range(1):
     # for i in range(int(len(users)/4*3), int(len(users))):
-        user = users[i]
-        print('Current added user for testing is {}'.format(user))
-        if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
-            continue
-        x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')),
-                                axis=0)
-        y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')),
-                                axis=0)
+    #     user = users[i]
+    #     print('Current added user for testing is {}'.format(user))
+    #     if not os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy'):
+    #         continue
+    #     x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')),
+    #                             axis=0)
+    #     y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')),
+    #                             axis=0)
     x_train = x_train[1:]
     y_train = y_train[1:]
-    x_test = x_test[1:]
-    y_test = y_test[1:]
-    x_train = x_train[:int(len(x_train) / 8 * 3)]
-    y_train = y_train[:int(len(y_train) / 8 * 3)]
-    x_test = x_test[int(len(x_test) / 8 * 3):int(len(x_test) / 2)]
-    y_test = y_test[int(len(y_test) / 8 * 3):int(len(y_test) / 2)]
-    print("the length of x_train is {}".format(np.shape(x_train)))
-    print("the length of y_train is {}".format(np.shape(y_train)))
-    print("the length of x_test is {}".format(np.shape(x_test)))
-    print("the length of y_test is {}".format(np.shape(y_test)))
+    # x_test = x_test[1:]
+    # y_test = y_test[1:]
     seq = np.arange(0, len(x_train), 1)
     np.random.shuffle(seq)
-    x_train = x_train[seq[:]]
-    y_train = y_train[seq[:]]
-    seq = np.arange(0, len(x_test), 1)
-    np.random.shuffle(seq)
-    x_test = x_test[seq[:]]
-    y_test = y_test[seq[:]]
+    x_test = x_train[seq[int(len(x_train)/8*3):int(len(x_train)/2)]]
+    y_test = y_train[seq[int(len(y_train)/8*3):int(len(y_train)/2)]]
+    x_train = x_train[seq[:int(len(x_train)/8*3)]]
+    y_train = y_train[seq[:int(len(y_train)/8*3)]]
+    # seq = np.arange(0, len(x_test), 1)
+    # np.random.shuffle(seq)
     print("the length of x_train is {}".format(np.shape(x_train)))
     print("the length of y_train is {}".format(np.shape(y_train)))
     print("the length of x_test is {}".format(np.shape(x_test)))
@@ -160,12 +155,13 @@ def data_loading_concept(label_index, data_path):
     # create arrays
     x_train = np.zeros((1, 128, 192))
     y_train = np.zeros((1,))
-    x_test = np.zeros((1, 128, 192))
-    y_test = np.zeros((1,))
+    # x_test = np.zeros((1, 128, 192))
+    # y_test = np.zeros((1,))
 
     # concatenate several users' data
     # for i in range(int(len(users)/2), int(len(users)/16*11)):
-    for i in range(1):
+    # for i in range(1):
+    for i in range(int(len(users))):
         user = users[i]
         print('Current added user is {}'.format(user))
         if not (os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy') and
@@ -173,43 +169,37 @@ def data_loading_concept(label_index, data_path):
             os.path.exists(data_path + user + '/' + Concepts[label_index] + '/labels.npy') and
             os.path.exists(data_path + user + '/' + Concepts[label_index] + '/levels.npy')):
             continue
-        x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
-        y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
+        current_user_xdata = np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')
+        x_train = np.concatenate((x_train, current_user_xdata[:10000]),
+                                 axis=0)
+        current_user_ydata = np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')
+        y_train = np.concatenate((y_train, current_user_ydata[:10000]),
+                                 axis=0)
     # for i in range(int(len(users)/16*11), int(len(users)/4*3)):
-    for i in range(1):
-        user = users[i]
-        print('Current added user is {}'.format(user))
-        if not (os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy') and
-            os.path.exists(data_path + user + '/' + Concepts[label_index] + '/y_data.npy') and
-            os.path.exists(data_path + user + '/' + Concepts[label_index] + '/labels.npy') and
-            os.path.exists(data_path + user + '/' + Concepts[label_index] + '/levels.npy')):
-            continue
-        x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
-        y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
+    # for i in range(1):
+    #     user = users[i]
+    #     print('Current added user is {}'.format(user))
+    #     if not (os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy') and
+    #         os.path.exists(data_path + user + '/' + Concepts[label_index] + '/y_data.npy') and
+    #         os.path.exists(data_path + user + '/' + Concepts[label_index] + '/labels.npy') and
+    #         os.path.exists(data_path + user + '/' + Concepts[label_index] + '/levels.npy')):
+    #         continue
+    #     x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
+    #     y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
 
     # remove the initial part of data that is not belong to users
     x_train = x_train[1:]
     y_train = y_train[1:]
-    x_test = x_test[1:]
-    y_test = y_test[1:]
-    x_train = x_train[int(len(x_train)/2):int(len(x_train)/16*11)]
-    y_train = y_train[int(len(y_train)/2):int(len(y_train)/16*11)]
-    x_test = x_test[int(len(x_test)/16*11):int(len(x_test)/4*3)]
-    y_test = y_test[int(len(y_test)/16*11):int(len(y_test)/4*3)]
-    print("the length of x_train is {}".format(np.shape(x_train)))
-    print("the length of y_train is {}".format(np.shape(y_train)))
-    print("the length of x_test is {}".format(np.shape(x_test)))
-    print("the length of y_test is {}".format(np.shape(y_test)))
-
-    # randomly sort the data for further using
+    # x_test = x_test[1:]
+    # y_test = y_test[1:]
     seq = np.arange(0, len(x_train), 1)
     np.random.shuffle(seq)
-    x_train = x_train[seq[:]]
-    y_train = y_train[seq[:]]
-    seq = np.arange(0, len(x_test), 1)
-    np.random.shuffle(seq)
-    x_test = x_test[seq[:]]
-    y_test = y_test[seq[:]]
+    x_test = x_train[seq[int(len(x_train)/16*11):int(len(x_train)/4*3)]]
+    y_test = y_train[seq[int(len(y_train)/16*11):int(len(y_train)/4*3)]]
+    x_train = x_train[seq[int(len(x_train)/2):int(len(x_train)/16*11)]]
+    y_train = y_train[seq[int(len(y_train)/2):int(len(y_train)/16*11)]]
+    # seq = np.arange(0, len(x_test), 1)
+    # np.random.shuffle(seq)
     print("the length of x_train is {}".format(np.shape(x_train)))
     print("the length of y_train is {}".format(np.shape(y_train)))
     print("the length of x_test is {}".format(np.shape(x_test)))
@@ -256,12 +246,13 @@ def data_loading_speak(data_path):
     y_train = np.zeros((1,))
     label_train = np.zeros((1,))
     level_train = np.zeros((1,))
-    x_test = np.zeros((1, 128, 192))
-    y_test = np.zeros((1,))
-    label_test = np.zeros((1,))
-    level_test = np.zeros((1,))
+    # x_test = np.zeros((1, 128, 192))
+    # y_test = np.zeros((1,))
+    # label_test = np.zeros((1,))
+    # level_test = np.zeros((1,))
     # for i in range(int(len(users)/4*3), int(len(users)/16*15)):
-    for i in range(1):
+    # for i in range(1):
+    for i in range(int(len(users))):
         user = users[i]
         print('Current added user is {}'.format(user))
         for label_index in range(len(Concepts)):
@@ -270,64 +261,63 @@ def data_loading_speak(data_path):
                     os.path.exists(data_path + user + '/' + Concepts[label_index] + '/labels.npy') and
                     os.path.exists(data_path + user + '/' + Concepts[label_index] + '/levels.npy')):
                 continue
-            x_train = np.concatenate((x_train, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
-            y_train = np.concatenate((y_train, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
-            label_train = np.concatenate((label_train, np.load(data_path + user + '/' + Concepts[label_index] + '/labels.npy')), axis=0)
-            level_train = np.concatenate((level_train, np.load(data_path + user + '/' + Concepts[label_index] + '/levels.npy')), axis=0)
+            current_user_xdata = np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')
+            x_train = np.concatenate((x_train, current_user_xdata[:10000]),
+                                     axis=0)
+            current_user_ydata = np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')
+            y_train = np.concatenate((y_train, current_user_ydata[:10000]),
+                                     axis=0)
+            current_user_labeldata = np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')
+            y_train = np.concatenate((y_train, current_user_labeldata[:10000]),
+                                     axis=0)
     # for i in range(int(len(users)/16*15), int(len(users))):
-    for i in range(1):
-        user = users[i]
-        print('Current added user is {}'.format(user))
-        for label_index in range(len(Concepts)):
-            if not (os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy') and
-                    os.path.exists(data_path + user + '/' + Concepts[label_index] + '/y_data.npy') and
-                    os.path.exists(data_path + user + '/' + Concepts[label_index] + '/labels.npy') and
-                    os.path.exists(data_path + user + '/' + Concepts[label_index] + '/levels.npy')):
-                continue
-            x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
-            y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
-            label_test = np.concatenate((label_test, np.load(data_path + user + '/' + Concepts[label_index] + '/labels.npy')), axis=0)
-            level_test = np.concatenate((level_test, np.load(data_path + user + '/' + Concepts[label_index] + '/levels.npy')), axis=0)
+    # for i in range(1):
+    #     user = users[i]
+    #     print('Current added user is {}'.format(user))
+    #     for label_index in range(len(Concepts)):
+    #         if not (os.path.exists(data_path + user + '/' + Concepts[label_index] + '/x_data.npy') and
+    #                 os.path.exists(data_path + user + '/' + Concepts[label_index] + '/y_data.npy') and
+    #                 os.path.exists(data_path + user + '/' + Concepts[label_index] + '/labels.npy') and
+    #                 os.path.exists(data_path + user + '/' + Concepts[label_index] + '/levels.npy')):
+    #             continue
+    #         x_test = np.concatenate((x_test, np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')), axis=0)
+    #         y_test = np.concatenate((y_test, np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')), axis=0)
+    #         label_test = np.concatenate((label_test, np.load(data_path + user + '/' + Concepts[label_index] + '/labels.npy')), axis=0)
+    #         level_test = np.concatenate((level_test, np.load(data_path + user + '/' + Concepts[label_index] + '/levels.npy')), axis=0)
     x_train = x_train[1:]
     y_train = y_train[1:]
     label_train = label_train[1:]
     level_train = level_train[1:]
-    x_test = x_test[1:]
-    y_test = y_test[1:]
-    label_test = label_test[1:]
-    level_test = level_test[1:]
+    # x_test = x_test[1:]
+    # y_test = y_test[1:]
+    # label_test = label_test[1:]
+    # level_test = level_test[1:]
+    seq = np.arange(0, len(x_train), 1)
+    np.random.shuffle(seq)
+    x_test = x_train[int(len(x_train)/16*15):int(len(x_train))]
+    y_test = y_train[int(len(y_train)/16*15):int(len(y_train))]
+    label_test = label_train[int(len(label_train)/16*15):int(len(label_train))]
     x_train = x_train[int(len(x_train)/4*3):int(len(x_train)/16*15)]
     y_train = y_train[int(len(y_train)/4*3):int(len(y_train)/16*15)]
     label_train = label_train[int(len(label_train)/4*3):int(len(label_train)/16*15)]
-    level_train = level_train[int(len(level_train)/4*3):int(len(level_train)/16*15)]
-    x_test = x_test[int(len(x_test)/16*15):int(len(x_test))]
-    y_test = y_test[int(len(y_test)/16*15):int(len(y_test))]
-    label_test = label_test[int(len(label_test)/16*15):int(len(label_test))]
-    level_test = level_test[int(len(level_test)/16*15):int(len(level_test))]
-    print("the length of x_train is {}".format(np.shape(x_train)))
-    print("the length of y_train is {}".format(np.shape(y_train)))
-    print("the length of x_test is {}".format(np.shape(x_test)))
-    print("the length of y_test is {}".format(np.shape(y_test)))
-    seq = np.arange(0, len(x_train), 1)
-    np.random.shuffle(seq)
-    x_train = x_train[seq[:]]
-    y_train = y_train[seq[:]]
-    label_train = label_train[seq[:]]
-    level_train = level_train[seq[:]]
-    seq = np.arange(0, len(x_test), 1)
-    np.random.shuffle(seq)
-    x_test = x_test[seq[:]]
-    y_test = y_test[seq[:]]
-    label_test = label_test[seq[:]]
-    level_test = level_test[seq[:]]
+    # seq = np.arange(0, len(x_train), 1)
+    # np.random.shuffle(seq)
+    # x_train = x_train[seq[:]]
+    # y_train = y_train[seq[:]]
+    # label_train = label_train[seq[:]]
+    # level_train = level_train[seq[:]]
+    # seq = np.arange(0, len(x_test), 1)
+    # np.random.shuffle(seq)
+    # x_test = x_test[seq[:]]
+    # y_test = y_test[seq[:]]
+    # label_test = label_test[seq[:]]
+    # level_test = level_test[seq[:]]
     print("the length of x_train is {}".format(np.shape(x_train)))
     print("the length of y_train is {}".format(np.shape(y_train)))
     print("the length of label_train is {}".format(np.shape(label_train)))
-    print("the length of level_train is {}".format(np.shape(level_train)))
     print("the length of x_test is {}".format(np.shape(x_test)))
     print("the length of y_test is {}".format(np.shape(y_test)))
     print("the length of label_test is {}".format(np.shape(label_test)))
-    print("the length of level_test is {}".format(np.shape(level_test)))
 
-    return x_train, y_train, label_train, level_train, x_test, y_test, label_test, level_test
+    return x_train, y_train, label_train, x_test, y_test, label_test
     # .................................................................................
