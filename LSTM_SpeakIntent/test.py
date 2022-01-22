@@ -7,5 +7,6 @@ from LSTM import simpleLSTM
 import data
 import os
 
-a = np.tile(np.arange(1, 129, 1, dtype=int), (1000, 1))
-print(type(a))
+y_pred = np.array([[1, 0], [2, 3], [4, 5], [6, 7], [8, 9]])
+y_pred = [list(x).index(max(x)) for x in y_pred]
+print(y_pred)

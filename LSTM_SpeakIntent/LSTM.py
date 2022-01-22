@@ -1,6 +1,7 @@
 # LSTM
 import torch.nn as nn
 import torch
+import numpy as np
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # __init__ is basically a function which will "initialize"/"activate" the properties of the class for a specific object
@@ -10,10 +11,17 @@ class simpleLSTM(nn.Module):
         super(simpleLSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, bias=False, batch_first=True)
-        self.fc = nn.Linear(hidden_size, num_classes)
+        self.lstm = nn.Sequential(
+            nn.Dropout(p=0.3),
+            nn.LSTM(input_size, hidden_size, num_layers, bias=False, batch_first=True)
+        )
+        self.fc = nn.Sequential(
+            nn.Linear(hidden_size, num_classes, bias=False),
+            nn.Dropout(p=0.3),
+            nn.ReLU()
+        )
 
-    def forward(self, x):
+    def forward(self, x, id):
         # x shape (batch, time_step, input_size)
         # out shape (batch, time_step, output_size)
         # h_n shape (n_layers, batch, hidden_size)
@@ -21,7 +29,7 @@ class simpleLSTM(nn.Module):
 
         # forward propagate lstm
         out, (h_n, c_n) = self.lstm(x)
-
+        # out = torch.cat((out, id), 2)
         # select the output of the last moment.
         out = self.fc(out[:, -1, :])
         return out, h_n, c_n

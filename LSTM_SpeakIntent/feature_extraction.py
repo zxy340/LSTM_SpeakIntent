@@ -28,30 +28,6 @@ Concepts = [
     'Lip_Suck',              # AU28   # 16
     # 'Blink'                  # AU45   # 17
 ]
-users = [
-    'adityarathore',      # 00
-    'Caitlin_Chan',       # 01
-    'Amy_Zhang',          # 02
-    'Anarghya',           # 03
-    'aniruddh',           # 04
-    'anthony',            # 05
-    'baron_huang',        # 06
-    'bhuiyan',            # 07
-    'chandler',           # 08
-    'chenyi_zou',         # 09
-    'deepak_joseph',      # 10
-    'dunjiong_lin',       # 11
-    'Eric_Kim',           # 12
-    'FrankYang',          # 13
-    'giorgi_datashvili',  # 14
-    'Huining_Li',         # 15
-    'jonathan',           # 16
-    'Kunjie_Lin',         # 17
-    'lauren',             # 18
-    'moohliton',          # 19
-    'phoung',             # 20
-    # 'Tracy_chen'          # 21
-]
 
 if __name__ == '__main__':
     data_path = '/mnt/stuff/xiaoyu/data/'  # the path where 'x_data.npy' and 'y_data.npy' are located

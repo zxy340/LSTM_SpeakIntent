@@ -38,7 +38,7 @@ class TDNN(nn.Module):
         self.dropout_p = dropout_p
         self.batch_norm = batch_norm
 
-        self.kernel = nn.Linear(input_dim * context_size, output_dim)
+        self.kernel = nn.Linear(input_dim * context_size, output_dim, bias=False)
         self.nonlinearity = nn.ReLU()
         if self.batch_norm:
             self.bn = nn.BatchNorm1d(output_dim)
@@ -87,21 +87,26 @@ class simpleTDNN(TDNN):
         self.frame4 = TDNN(input_dim=512, output_dim=512, context_size=1, dilation=1)
         self.frame5 = TDNN(input_dim=512, output_dim=1500, context_size=1, dilation=1)
         self.fc1 = nn.Sequential(
-            nn.Linear(114*1500, 1000),
+            nn.Linear(114*1500, 1000, bias=False),
             nn.ReLU(),
             nn.Sigmoid())
         self.fc2 = nn.Sequential(
-            nn.Linear(1000, 500),
+            nn.Linear(1000, 500, bias=False),
             nn.ReLU(),
             nn.Sigmoid())
         self.fc3 = nn.Sequential(
-            nn.Linear(500, 128),
+            nn.Linear(500, 128, bias=False),
             nn.ReLU(),
             nn.Sigmoid())
-        self.fc4 = nn.Linear(128, num_classes)
+        self.fc4 = nn.Sequential(
+            nn.Linear(128, num_classes,bias=False),
+            nn.Dropout(p=0.3),
+            nn.ReLU(),
+            nn.Sigmoid())
     def forward(self, x):
         # Input to frame1 is of shape (batch_size, T, 24)
         # Output of frame5 will be (batch_size, T-14, 1500)
+        nn.Dropout(p=0.3),
         out1 = self.frame1(x)
         out2 = self.frame2(out1)
         out3 = self.frame3(out2)

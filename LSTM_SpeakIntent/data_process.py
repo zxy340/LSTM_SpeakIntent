@@ -52,7 +52,7 @@ users = [
     'lauren',             # 18
     'moohliton',          # 19
     'phoung',             # 20
-    # 'Tracy_chen'          # 21
+    # 'Tracy_chen'          # 21 :  since current he has no speak intent label data
 ]
 for i in range(21):
     current_user_data = users[i]  # the folder "data" has several users
