@@ -221,6 +221,24 @@ def load_data(concept, Path):
 
 class GetLoader(torch.utils.data.Dataset):
     # initial function, get the data and label
+    def __init__(self, data_root, data_label):
+        self.data = data_root
+        self.label = data_label
+    # index is divided based on the batchsize, finally return the data and corresponding labels
+    def __getitem__(self, index):
+        data = self.data[index]
+        labels = self.label[index]
+        if labels == "True":
+            labels = 1
+        elif labels == "False":
+            labels = 0
+        return data, labels
+    # for DataLoader better dividing the data, we use this function to return the length of the data
+    def __len__(self):
+        return len(self.data)
+
+class GetLoaderID(torch.utils.data.Dataset):
+    # initial function, get the data and label
     def __init__(self, data_root, data_label, data_id):
         self.data = data_root
         self.label = data_label

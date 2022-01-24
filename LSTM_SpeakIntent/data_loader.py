@@ -252,9 +252,9 @@ def data_loading_speak(data_path):
         array of the labels for testing
     """
     x_train = np.zeros((1, 128, 192))
-    y_train = np.zeros((1,))
+    # y_train = np.zeros((1,))
     label_train = np.zeros((1,))
-    level_train = np.zeros((1,))
+    # level_train = np.zeros((1,))
     # x_test = np.zeros((1, 128, 192))
     # y_test = np.zeros((1,))
     # label_test = np.zeros((1,))
@@ -271,13 +271,27 @@ def data_loading_speak(data_path):
                     os.path.exists(data_path + user + '/' + Concepts[label_index] + '/levels.npy')):
                 continue
             current_user_xdata = np.load(data_path + user + '/' + Concepts[label_index] + '/x_data.npy')
+            # current_user_ydata = np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')
+            # y_train = np.concatenate((y_train, current_user_ydata[:10000]),
+            #                          axis=0)
+            current_user_labeldata = np.load(data_path + user + '/' + Concepts[label_index] + '/labels.npy')
+            # get data with effective labels
+            current_user_labeldata = np.where(current_user_labeldata, 1, 0)
+            yes_concept = np.argwhere(current_user_labeldata == 1)  # frames that all its chirps are this concept
+            no_concept = np.argwhere(current_user_labeldata == 0)  # frames that all its chirps are not this concept
+            # get the min frame number of yes_concept and no_concept and choose the same number of the other
+            n_sample = min(np.shape(yes_concept)[0], np.shape(no_concept)[0])
+            if n_sample == 0:
+                continue
+            seq = np.concatenate([yes_concept[:n_sample], no_concept[:n_sample]],
+                                 axis=0)  # concatenate yes_concept and no_concept sequences
+            np.random.shuffle(seq)  # randomly shuffle the sequences
+            print('the size of the concept {} for user {} is {}'.format(Concepts[label_index], user, np.shape(seq)))
+            current_user_xdata = current_user_xdata[seq[:]].squeeze()
+            current_user_labeldata = current_user_labeldata[seq[:]].squeeze()
             x_train = np.concatenate((x_train, current_user_xdata[:10000]),
                                      axis=0)
-            current_user_ydata = np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')
-            y_train = np.concatenate((y_train, current_user_ydata[:10000]),
-                                     axis=0)
-            current_user_labeldata = np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')
-            y_train = np.concatenate((y_train, current_user_labeldata[:10000]),
+            label_train = np.concatenate((label_train, current_user_labeldata[:10000]),
                                      axis=0)
     # for i in range(int(len(users)/16*15), int(len(users))):
     # for i in range(1):
@@ -294,21 +308,19 @@ def data_loading_speak(data_path):
     #         label_test = np.concatenate((label_test, np.load(data_path + user + '/' + Concepts[label_index] + '/labels.npy')), axis=0)
     #         level_test = np.concatenate((level_test, np.load(data_path + user + '/' + Concepts[label_index] + '/levels.npy')), axis=0)
     x_train = x_train[1:]
-    y_train = y_train[1:]
+    # y_train = y_train[1:]
     label_train = label_train[1:]
-    level_train = level_train[1:]
+    # level_train = level_train[1:]
     # x_test = x_test[1:]
     # y_test = y_test[1:]
     # label_test = label_test[1:]
     # level_test = level_test[1:]
-    seq = np.arange(0, len(x_train), 1)
-    np.random.shuffle(seq)
-    x_test = x_train[int(len(x_train)/16*15):int(len(x_train))]
-    y_test = y_train[int(len(y_train)/16*15):int(len(y_train))]
-    label_test = label_train[int(len(label_train)/16*15):int(len(label_train))]
-    x_train = x_train[int(len(x_train)/4*3):int(len(x_train)/16*15)]
-    y_train = y_train[int(len(y_train)/4*3):int(len(y_train)/16*15)]
-    label_train = label_train[int(len(label_train)/4*3):int(len(label_train)/16*15)]
+    x_test = x_train[int(len(x_train) / 4 * 3):int(len(x_train))]
+    # y_test = y_train[int(len(y_train) / 4 * 3):int(len(y_train))]
+    label_test = label_train[int(len(label_train) / 4 * 3):int(len(label_train))]
+    x_train = x_train[:int(len(x_train) / 4 * 3)]
+    # y_train = y_train[:int(len(y_train) / 4 * 3)]
+    label_train = label_train[:int(len(label_train) / 4 * 3)]
     # seq = np.arange(0, len(x_train), 1)
     # np.random.shuffle(seq)
     # x_train = x_train[seq[:]]
@@ -322,11 +334,12 @@ def data_loading_speak(data_path):
     # label_test = label_test[seq[:]]
     # level_test = level_test[seq[:]]
     print("the length of x_train is {}".format(np.shape(x_train)))
-    print("the length of y_train is {}".format(np.shape(y_train)))
+    # print("the length of y_train is {}".format(np.shape(y_train)))
     print("the length of label_train is {}".format(np.shape(label_train)))
     print("the length of x_test is {}".format(np.shape(x_test)))
-    print("the length of y_test is {}".format(np.shape(y_test)))
+    # print("the length of y_test is {}".format(np.shape(y_test)))
     print("the length of label_test is {}".format(np.shape(label_test)))
 
-    return x_train, y_train, label_train, x_test, y_test, label_test
+    # return x_train, y_train, label_train, x_test, y_test, label_test
+    return x_train, label_train, x_test, label_test
     # .................................................................................

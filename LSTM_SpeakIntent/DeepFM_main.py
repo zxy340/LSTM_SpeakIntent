@@ -9,7 +9,7 @@ from data_loader import data_loading_LSTM
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import tensorflow as tf
-import DeepFM
+from DeepFM import DeepFM
 from sklearn.metrics import roc_auc_score
 
 # Device configuration

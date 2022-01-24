@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 from LSTM import simpleLSTM
 from TDNN import simpleTDNN
-from data import GetLoader
+from data import GetLoader, GetLoaderID
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -94,7 +94,7 @@ def LSTM_train(x_train, y_train, id_train, x_test, y_test, id_test, label_index,
     # ....................................................................................
 
     # .............Hyper Parameters and initial model parameters..........................
-    epochs = 30
+    epochs = 1
     hidden_size = 16
     num_layers = 5
     num_classes = 2
@@ -435,8 +435,8 @@ def speak_detection(x_train, y_train, label_train, level_train, x_test, y_test, 
         C = np.zeros(2)
         # if epoch % 10 == 0:
         #     lr = lr / 2
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
+        # for param_group in optimizer.param_groups:
+        #     param_group['lr'] = lr
         for i, (data, labels) in enumerate(train_data):
             if len(data) < batch_size:
                 print(len(data))
