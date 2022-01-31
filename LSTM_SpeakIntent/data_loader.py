@@ -79,7 +79,7 @@ def data_loading_LSTM(label_index, data_path):
     """
     x_train = np.zeros((1, 128, 192))
     y_train = np.zeros((1,))
-    id_train = np.zeros((1, 128, 1))
+    # id_train = np.zeros((1, 128, 1))
     # x_test = np.zeros((1, 128, 192))
     # y_test = np.zeros((1,))
     # for i in range(int(len(users)/8*3)):
@@ -96,9 +96,9 @@ def data_loading_LSTM(label_index, data_path):
         current_user_ydata = np.load(data_path + user + '/' + Concepts[label_index] + '/y_data.npy')
         y_train = np.concatenate((y_train, current_user_ydata[:10000]),
                                  axis=0)
-        tem_id = np.tile(np.tile(np.array([i]), 128)[np.newaxis, :], (len(current_user_xdata), 1))[:, :, np.newaxis]
-        id_train = np.concatenate((id_train, tem_id[:10000]),
-                                 axis=0)
+        # tem_id = np.tile(np.tile(np.array([i]), 128)[np.newaxis, :], (len(current_user_xdata), 1))[:, :, np.newaxis]
+        # id_train = np.concatenate((id_train, tem_id[:10000]),
+        #                          axis=0)
     # for i in range(int(len(users)/8*3), int(len(users)/2)):
     # for i in range(1):
     # for i in range(int(len(users)/4*3), int(len(users))):
@@ -112,27 +112,28 @@ def data_loading_LSTM(label_index, data_path):
     #                             axis=0)
     x_train = x_train[1:]
     y_train = y_train[1:]
-    id_train = id_train[1:]
+    # id_train = id_train[1:]
     # x_test = x_test[1:]
     # y_test = y_test[1:]
     seq = np.arange(0, len(x_train), 1)
     np.random.shuffle(seq)
     x_test = x_train[seq[int(len(x_train)/8*3):int(len(x_train)/2)]]
     y_test = y_train[seq[int(len(y_train)/8*3):int(len(y_train)/2)]]
-    id_test = id_train[seq[int(len(id_train)/8*3):int(len(id_train)/2)]]
+    # id_test = id_train[seq[int(len(id_train)/8*3):int(len(id_train)/2)]]
     x_train = x_train[seq[:int(len(x_train)/8*3)]]
     y_train = y_train[seq[:int(len(y_train)/8*3)]]
-    id_train = id_train[seq[:int(len(id_train)/8*3)]]
+    # id_train = id_train[seq[:int(len(id_train)/8*3)]]
     # seq = np.arange(0, len(x_test), 1)
     # np.random.shuffle(seq)
     print("the length of x_train is {}".format(np.shape(x_train)))
     print("the length of y_train is {}".format(np.shape(y_train)))
-    print("the length of id_train is {}".format(np.shape(id_train)))
+    # print("the length of id_train is {}".format(np.shape(id_train)))
     print("the length of x_test is {}".format(np.shape(x_test)))
     print("the length of y_test is {}".format(np.shape(y_test)))
-    print("the length of id_test is {}".format(np.shape(id_test)))
+    # print("the length of id_test is {}".format(np.shape(id_test)))
 
-    return x_train, y_train, id_train, x_test, y_test, id_test
+    return x_train, y_train, x_test, y_test
+    # return x_train, y_train, id_train, x_test, y_test, id_test
 
 def data_loading_concept(label_index, data_path):
     """

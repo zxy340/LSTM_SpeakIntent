@@ -21,7 +21,7 @@ class simpleLSTM(nn.Module):
             nn.ReLU()
         )
 
-    def forward(self, x, id):
+    def forward(self, x):
         # x shape (batch, time_step, input_size)
         # out shape (batch, time_step, output_size)
         # h_n shape (n_layers, batch, hidden_size)

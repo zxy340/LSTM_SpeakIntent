@@ -55,7 +55,149 @@ users = [
     'phoung',             # 20
     # 'Tracy_chen'          # 21 :  since current he has no speak intent label data
 ]
-def LSTM_train(x_train, y_train, id_train, x_test, y_test, id_test, label_index, model_type):
+def LSTM_train(x_train, y_train, x_test, y_test, model_type):
+    """
+    train the LSTM model for specific concept and test the model
+
+    Parameters
+    ----------
+    x_train : np.array(num_frames, 128, 3 * 64)
+        array of the mmWave data for training, num_frames is the number of frames from several users,
+        128 is the number of chirps of one frame, 3 * 64 is the data size of one chirp.
+    y_train : np.array(num_frames, )
+        array of the labels
+    x_test : np.array(num_frames, 128, 3 * 64)
+        array of the mmWave data for testing, num_frames is the number of frames from several different users from x_train,
+        128 is the number of chirps of one frame, 3 * 64 is the data size of one chirp.
+    y_train : np.array(num_frames, )
+        array of the labels
+    label_index : int
+        indicate the index of the concept
+    model_type : string
+        indicate the type of the LSTM model the concept
+    Returns
+    -------
+    """
+    # .............basic information of training and testing set.......................
+    training_data_count = len(x_train)  # number of training series
+    testing_data_count = len(x_test)
+    num_steps = len(x_test[0])  # timesteps per series
+    num_input = len(x_test[0][0])  # input parameters per timestep
+    # ..................................................................................
+
+    # ..................................................................................
+    # use GetLoader to load the data and return Dataset object, which contains data and labels
+    torch_data = GetLoader(x_train, y_train)
+    train_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
+    torch_data = GetLoader(x_test, y_test)
+    test_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
+    # ....................................................................................
+
+    # .............Hyper Parameters and initial model parameters..........................
+    epochs = 30
+    hidden_size = 16
+    num_layers = 5
+    num_classes = 2
+    lr = 0.01           # learning rate
+    # initial model
+    model = simpleLSTM(num_input, hidden_size, num_layers, num_classes).to(device)
+    # for name, param in model.named_parameters():
+    #     if name.startswith("lstm.1.weight"):
+    #         nn.init.xavier_uniform_(param, gain=nn.init.calculate_gain('relu'))
+    #     else:
+    #         nn.init.constant_(param, 0.3)
+    # loss and optimizer
+    criterion = nn.MSELoss().to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr)
+    # optimizer = torch.optim.SGD(model.parameters(), lr)
+    # .....................................................................................
+
+    # ...........................train and store the model.................................
+    # train the model
+    for epoch in range(epochs):
+        C = np.zeros(2)
+        if epoch % 10 == 0:
+            lr = lr / 10
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
+        for i, (data, labels) in enumerate(train_data):
+            data = data.to(device)
+            label = []
+            if labels[0].size() != num_classes:
+                for j in range(len(labels)):
+                    label.append(np.eye(num_classes, dtype=float)[int(labels[j])])
+                    if labels[j] == 0:
+                        C[0] += 1
+                    else:
+                        C[1] += 1
+            else:
+                label = labels
+            label = torch.tensor(np.array(label)).to(device)
+
+            optimizer.zero_grad()
+            # forward pass
+            outputs, _, _ = model(data.float())
+            print('the size of outputs is {}'.format(np.shape(outputs)))
+            print('the size of label is {}'.format(np.shape(label)))
+            loss = criterion(outputs.float(), label.float())
+
+            # backward and optimize
+            loss.backward()
+            optimizer.step()
+
+            if i % 30 == 0:
+                print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
+                       .format(epoch+1, epochs, i+1, training_data_count / 128, loss.item()))
+        print('Train C of the {} model for the speak intent on the {} train mmWave data: {}'.format(model_type, training_data_count, C))
+    # ........................................................................................
+
+    # ............................test the trained model.............................
+    # Test the model
+    model.eval()
+    with torch.no_grad():
+        correct = 0
+        total = 0
+        C = np.zeros((2, 2))
+        TP = 0
+        TN = 0
+        FN = 0
+        FP = 0
+        for data, label in test_data:
+            data = data.to(device)
+            label = label.ravel().to(device)
+            # label = label.squeeze()
+            outputs, _, _ = model(data.float())
+            _, predicted = torch.max(outputs.float(), 1)
+            total += label.size(0)
+            correct += (predicted == label).sum().item()
+            for i in range(len(predicted)):
+                if predicted[i] == 0:
+                    C[0][0] += 1
+                else:
+                    C[0][1] += 1
+                if label[i] == 0:
+                    C[1][0] += 1
+                else:
+                    C[1][1] += 1
+
+            # TP    predict 和 label 同时为1
+            TP += ((predicted == 1) & (label == 1)).cpu().sum()
+            # TN    predict 和 label 同时为0
+            TN += ((predicted == 0) & (label == 0)).cpu().sum()
+            # FN    predict 0 label 1
+            FN += ((predicted == 0) & (label == 1)).cpu().sum()
+            # FP    predict 1 label 0
+            FP += ((predicted == 1) & (label == 0)).cpu().sum()
+
+        print('TP = {}, TN = {}, FN = {}, FP = {}'.format(TP, TN, FN, FP))
+        p = TP / (TP + FP)
+        r = TP / (TP + FN)
+        F1 = 2 * r * p / (r + p)
+        print('Test F1 score of the {} model for the speak intent on the {} test mmWave data: {}'.format(model_type, testing_data_count, F1))
+        print('Test C of the {} model for the speak intent on the {} test mmWave data: {}'.format(model_type, testing_data_count, C))
+        print('Test Accuracy of the {} model for the speak intent on the {} test mmWave data: {} %'.format(model_type, testing_data_count, 100 * correct / total))
+    # ..................................................................................................
+def LSTM_train_ID(x_train, y_train, id_train, x_test, y_test, id_test, label_index, model_type):
     """
     train the LSTM model for specific concept and test the model
 
@@ -552,9 +694,9 @@ def TDNN_train(x_train, y_train, id_train, x_test, y_test, id_test, label_index,
 
     # ..................................................................................
     # use GetLoader to load the data and return Dataset object, which contains data and labels
-    torch_data = GetLoader(x_train, y_train, id_train)
+    torch_data = GetLoaderID(x_train, y_train, id_train)
     train_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
-    torch_data = GetLoader(x_test, y_test, id_test)
+    torch_data = GetLoaderID(x_test, y_test, id_test)
     test_data = DataLoader(torch_data, batch_size=128, shuffle=True, drop_last=False)
     # ....................................................................................
 

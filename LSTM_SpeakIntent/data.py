@@ -228,10 +228,10 @@ class GetLoader(torch.utils.data.Dataset):
     def __getitem__(self, index):
         data = self.data[index]
         labels = self.label[index]
-        if labels == "True":
-            labels = 1
-        elif labels == "False":
-            labels = 0
+        # if labels == "True":
+        #     labels = 1
+        # elif labels == "False":
+        #     labels = 0
         return data, labels
     # for DataLoader better dividing the data, we use this function to return the length of the data
     def __len__(self):
